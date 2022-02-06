@@ -26,7 +26,7 @@ def socrata_client(client_url: str, dataset_api_key: str, filename: str):
     results_df = pd.DataFrame.from_records(results)
 
     # Save the result to the data/raw folder
-    results_df.to_csv('data/raw/'+ filename)
+    results_df.to_csv('data/raw/'+ filename + ".csv")
 
     # Print the results
     print(results_df.head())
