@@ -6,11 +6,19 @@ import pandas as pd
 from sodapy import Socrata
 
 
-def socrata_client(dataset_api_key: str, filename: str):
+def socrata_client(client_url: str, dataset_api_key: str, filename: str):
+    """
+    client_url = found under developer portal -> str
+    dataset_api_key = found under developer portal -> str
+    filename = depends on which dataset (personal choice) -> str
+
+    Example: 
+    socrata_client(client_url = "usc.data.socrata.com", dataset_api_key= "bhyw-mxf5", filename= "LA-AQ-Data")
+    """
 
     # Unauthenticated client only works with public data sets. Note 'None'
     # in place of application token, and no username or password:
-    client = Socrata("usc.data.socrata.com", None)
+    client = Socrata(client_url, None)
 
     # First 10,000 results, returned as JSON from API / converted to Python list of
     # dictionaries by sodapy.
@@ -25,6 +33,3 @@ def socrata_client(dataset_api_key: str, filename: str):
     # Print the results
     print(results_df.head())
     return results_df
-
-
-socrata_client(dataset_api_key= "bhyw-mxf5", filename= "LA-AQ-Data")
