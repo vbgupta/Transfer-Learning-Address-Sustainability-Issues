@@ -17,7 +17,7 @@
 
 
 ### Cheatsheets by RStudio
-[Link Contains](https://www.rstudio.com/resources/cheatsheets/)
+[This Link Contains](https://www.rstudio.com/resources/cheatsheets/)
  
 * Data visualization with ggplot2 cheatsheet
 * Data transformation with dplyr cheatsheet
