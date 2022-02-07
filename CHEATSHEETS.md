@@ -16,8 +16,9 @@
 * [Caret for Machine Learning](https://raw.githubusercontent.com/rstudio/cheatsheets/main/caret.pdf)
 
 
-### [Cheatsheets by RStudio](https://www.rstudio.com/resources/cheatsheets/)
-Contains 
+### Cheatsheets by RStudio
+[Link Contains](https://www.rstudio.com/resources/cheatsheets/)
+ 
 * Data visualization with ggplot2 cheatsheet
 * Data transformation with dplyr cheatsheet
 * Data tidying with tidyr cheatsheet
