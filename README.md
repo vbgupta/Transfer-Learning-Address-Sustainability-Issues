@@ -11,3 +11,8 @@ For Primary Analysis
 References
 * (R) https://towardsdatascience.com/four-r-packages-for-automated-exploratory-data-analysis-you-might-have-missed-c38b03d4ee16#aba1
 * (Python) https://towardsdatascience.com/4-libraries-that-can-perform-eda-in-one-line-of-python-code-b13938a06ae
+
+### Interim Github Instructions
+* Please create your individual branch for committing changes. 
+* Create a pull request to merge your commits onto `master`.
+* Use individual folders
