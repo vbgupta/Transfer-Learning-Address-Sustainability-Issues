@@ -23,3 +23,20 @@ References
 ### Accessing AQI in R - Package
 https://cran.r-project.org/web/packages/RAQSAPI/index.html
 walk through -> https://github.com/USEPA/RAQSAPI
+
+### Accessing Open Data Datasets in R
+Install [RSocrata in R](https://github.com/Chicago/RSocrata) to retrieve datasets from Open Data. 
+
+To get the current released version from CRAN:
+```
+install.packages("RSocrata")
+```
+
+The most recent beta with soon-to-be-released changes can be installed from GitHub:
+```
+# install.packages("devtools")
+devtools::install_github("Chicago/RSocrata")
+```
+Mapping spatial data using `Leaflet` 
+* Use GeoJSONs as explained [here](https://dev.socrata.com/docs/formats/geojson.html).
+
