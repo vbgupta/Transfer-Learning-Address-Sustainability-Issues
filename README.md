@@ -22,3 +22,4 @@ References
 
 ### Accessing AQI in R - Package
 https://cran.r-project.org/web/packages/RAQSAPI/index.html
+walk through -> https://github.com/USEPA/RAQSAPI
