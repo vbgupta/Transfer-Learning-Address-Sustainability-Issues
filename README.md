@@ -19,3 +19,6 @@ References
 ### Set Up Environment
 * Download `Anaconda Navigator` to install essential Python and R libraries. 
 * Refer to [Anaconda Navigator Cheatsheet](https://docs.anaconda.com/_downloads/9ee215ff15fde24bf01791d719084950/Anaconda-Starter-Guide.pdf) to follow best-practices.
+
+### Accessing AQI in R - Package
+https://cran.r-project.org/web/packages/RAQSAPI/index.html
