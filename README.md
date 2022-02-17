@@ -3,14 +3,14 @@ PSU DS440 Capstone Project Repository
 
 ### Tools For Database Management
 * Install Git Large File Storage (LFS)
-![image](https://git-lfs.github.com/images/graphic.gif)
+![image](https://git-lfs.github.com/images/graphic.gif){width=50%}
 
 This is an open source Git extension for versioning large files. It will help us upload datasets to GitHub.
 Download and install the Git command line extension. Once downloaded and installed, set up Git LFS for your user account by running:
 
 `git lfs install`
 You only need to run this once per user account.
-[Full instruction can be found here.](![Uploading image.png…](https://git-lfs.github.com/)
+[Full instruction can be found here.](https://git-lfs.github.com/)
 
 * Exploring [Microsoft Azure SQL](https://azure.microsoft.com/en-us/products/azure-sql/database/)
 Azure SQL Database is an always-up-to-date relational database service built for the cloud. 
