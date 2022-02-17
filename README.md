@@ -1,6 +1,25 @@
 # DS440-Transfer-Learning-Address-Sustainability-Issues
 PSU DS440 Capstone Project Repository
 
+### Tools For Database Management
+* Install Git Large File Storage (LFS)
+![image](https://user-images.githubusercontent.com/49132244/154539583-54e5ca1a-fea7-423b-9331-b657a40bd550.png)
+
+This is an open source Git extension for versioning large files. It will help us upload datasets to GitHub.
+Download and install the Git command line extension. Once downloaded and installed, set up Git LFS for your user account by running:
+
+`git lfs install`
+You only need to run this once per user account.
+[Full instruction can be found here.](![Uploading image.png…](https://git-lfs.github.com/)
+
+* Exploring [Microsoft Azure SQL](https://azure.microsoft.com/en-us/products/azure-sql/database/)
+Azure SQL Database is an always-up-to-date relational database service built for the cloud. 
+Download [Azure Data Studio](https://docs.microsoft.com/en-us/sql/azure-data-studio/download-azure-data-studio?view=sql-server-ver15#download-azure-data-studio).
+
+Azure Data Studio is a cross-platform database tool for data professionals who use on-premises and cloud data platforms on Windows, macOS, and Linux. Use Azure Data Studio to query, design, and manage your databases and data warehouses wherever they are, on your local computer or in the cloud.
+
+*@Vaibhav and @Ally have been added to the shared resource. I will share server link via email. Please create an Azure Account using PSU ID and accept request to join Resource Group. Navigate to `prediction` SQL Database.*
+
 ### Tools For Exploratory Data Analysis (EDA)
 Use packages to automate EDA of datasets. Please read *References* to explore other available tools for data exploration.
 
