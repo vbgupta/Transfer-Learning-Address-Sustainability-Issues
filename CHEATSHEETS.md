@@ -2,6 +2,11 @@
 
 # R
 
+### Handling Big Data
+* [Big data in R](http://www.columbia.edu/~sjm2186/EPIC_R/EPIC_R_BigData.pdf)
+* [The ff package: Handling Large Data Sets in R with Memory Mapped Pages of Binary Flat Files](https://www.r-project.org/conferences/useR-2007/program/presentations/adler.pdf)
+* [Three Strategies for Working with Big Data in R](https://rviews.rstudio.com/2019/07/17/3-big-data-strategies-for-r/)
+
 ### Keep On Hand Always!
 * [Basic Data Structures](http://github.com/rstudio/cheatsheets/blob/main/base-r.pdf)
 * [MLR Package for Machine Learning](https://raw.githubusercontent.com/rstudio/cheatsheets/main/mlr.pdf)
