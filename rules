@@ -1,0 +1,5 @@
+Naming Rules
+
+Variable and function names should be lowercase. Use an underscore (_) to separate words within a name. Generally, variable names should be nouns and function names should be verbs. Strive for names that are concise and meaningful (this is not easy!).
+
+Format R code automatically: https://yihui.org/formatr/

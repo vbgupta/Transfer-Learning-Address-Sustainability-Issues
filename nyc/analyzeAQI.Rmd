@@ -14,6 +14,7 @@ library(devtools)
 library(data.table)
 library(tidyverse)
 library(DataExplorer)
+library(filenamer)
 ```
 
 ```{r}
@@ -73,84 +74,133 @@ ny_counties <- data.table(aqs_list_counties(aqs_user, state=ny_fips_code))
 nyCounty_fips_code <- ny_counties[value_represented == COUNTY]$code
 ```
 
-```{r}
-
-```
-
 ## Dataset URLs
+```{r}
+# Empty list to store urls
+dataset <- list()
+```
 
 ```{r}
-bridgeHoldLocStipulations <- "https://data.cityofnewyork.us/resource/ge3f-inui.json?boroughname=MANHTTAN"
+# Store urls
+dataset$bridgeHoldLocStipulations <- "https://data.cityofnewyork.us/resource/ge3f-inui.json?boroughname=MANHTTAN"
 
-busBreakdownsDelays <- "https://data.cityofnewyork.us/resource/ez4e-fazm.json?boro=Manhattan&$where=created_on between '2018-01-01' and '2022-01-01'"
+dataset$busBreakdownsDelays <- "https://data.cityofnewyork.us/resource/ez4e-fazm.json?boro=Manhattan&$where=created_on between '2018-01-01' and '2022-01-01'"
 
-commercialBicycleInspections <- "https://data.cityofnewyork.us/resource/tg3t-nh4h.json?borough=Manhattan&$where=inspectiondate between '2018-01-01' and '2022-01-01'"
+dataset$commercialBicycleInspections <- "https://data.cityofnewyork.us/resource/tg3t-nh4h.json?borough=Manhattan&$where=inspectiondate between '2018-01-01' and '2022-01-01'"
 
-streetConstructionPermits <- "https://data.cityofnewyork.us/resource/tqtj-sjs8.json?boroughname=MANHATTAN&$where=createdon between'2018-01-01' and '2022-01-01'"
+dataset$streetConstructionPermits <- "https://data.cityofnewyork.us/resource/tqtj-sjs8.json?boroughname=MANHATTAN&$where=createdon between'2018-01-01' and '2022-01-01'"
 
-motorCrashes <- "https://data.cityofnewyork.us/resource/h9gi-nx95.json?borough=MANHATTAN&$where=crash_date between '2018-01-01' and '2022-01-01'"
+dataset$motorCrashes <- "https://data.cityofnewyork.us/resource/h9gi-nx95.json?borough=MANHATTAN&$where=crash_date between '2018-01-01' and '2022-01-01'"
 
-linkNYCKioskStatus <- "https://data.cityofnewyork.us/resource/quxm-hmyr.json?borough=MANHATTAN&$where=generated_on  '2022'"
+dataset$linkNYCKioskStatus <- "https://data.cityofnewyork.us/resource/quxm-hmyr.json?borough=MANHATTAN&$where=generated_on  '2022'"
 
-speedReducerTracking <- "https://data.cityofnewyork.us/resource/9n6h-pt9g.json?borough=Manhattan"
+dataset$speedReducerTracking <- "https://data.cityofnewyork.us/resource/9n6h-pt9g.json?borough=Manhattan"
 
-serviceRequests311 <- "https://data.cityofnewyork.us/resource/erm2-nwe9.json?borough=MANHATTAN"
+dataset$serviceRequests311 <- "https://data.cityofnewyork.us/resource/erm2-nwe9.json?borough=MANHATTAN"
 
-gasRetailPriceWeekly <- "https://data.ny.gov/resource/nqur-w4p7.json?$where=date between '2018-01-01' and '2022-01-01'"
+dataset$gasRetailPriceWeekly <- "https://data.ny.gov/resource/nqur-w4p7.json?$where=date between '2018-01-01' and '2022-01-01'"
 
-dieselRetailPriceWeekly <- "https://data.ny.gov/resource/dtfv-pchi.json?$where=date between '2018-01-01' and '2022-01-01'"
+dataset$dieselRetailPriceWeekly <- "https://data.ny.gov/resource/dtfv-pchi.json?$where=date between '2018-01-01' and '2022-01-01'"
 
-bulkStorageFacilities <- "https://data.ny.gov/resource/pteg-c78n.json?county=NEW YORK"
+dataset$bulkStorageFacilities <- "https://data.ny.gov/resource/pteg-c78n.json?county=NEW YORK"
 
-spillIncidents <- "https://data.ny.gov/resource/u44d-k5fk.json?$where=spill_date>'2018-01-01'&county=New York"
+dataset$spillIncidents <- "https://data.ny.gov/resource/u44d-k5fk.json?$where=spill_date>'2018-01-01'&county=New York"
 
-hourlyTrafficMTA <- "https://data.ny.gov/resource/qzve-kjga.json?$where=date between '2018-01-01' and '2022-01-01'"
+dataset$hourlyTrafficMTA <- "https://data.ny.gov/resource/qzve-kjga.json?$where=date between '2018-01-01' and '2022-01-01'"
 
-subwayCustomerJourneyMTA <- "https://data.ny.gov/resource/r7qk-6tcy.json?$where=month>'2017-01'"
+dataset$subwayCustomerJourneyMTA <- "https://data.ny.gov/resource/r7qk-6tcy.json?$where=month>'2017-01'"
 
-nypaNetGenerationByFacility <- "https://data.ny.gov/resource/isux-jnrn.json?$where=year>'2017'"
+dataset$nypaNetGenerationByFacility <- "https://data.ny.gov/resource/isux-jnrn.json?$where=year>'2017'"
 
-utilityBaseRateChangeByCompany <- "https://data.ny.gov/resource/ddrw-g9a6.json?$where=date_effective between '2018-01-01' and '2022-01-01'"
+dataset$utilityBaseRateChangeByCompany <- "https://data.ny.gov/resource/ddrw-g9a6.json?$where=date_effective between '2018-01-01' and '2022-01-01'"
 
-keyCreditCollection <- "https://data.ny.gov/resource/kdjh-dhwi.json?$where=year>2017"
+dataset$keyCreditCollection <- "https://data.ny.gov/resource/kdjh-dhwi.json?$where=year>2017"
 
-waterWells <- "https://data.ny.gov/resource/6gke-uhe4.json?county=New York"
+dataset$waterWells <- "https://data.ny.gov/resource/6gke-uhe4.json?county=New York"
 
-wastewaterTreatment <- "https://data.ny.gov/resource/2v6p-juki.json?city=NEW YORK"
+dataset$wastewaterTreatment <- "https://data.ny.gov/resource/2v6p-juki.json?city=NEW YORK"
 
-nyMTAEvents511 <- "https://data.ny.gov/resource/i8wu-pqzv.json?$where=create_time>'2018-01-01'&county=New York"
+dataset$nyMTAEvents511 <- "https://data.ny.gov/resource/i8wu-pqzv.json?$where=create_time>'2018-01-01'&county=New York"
 
-busCustomerJourneyMetricsMTA <- "https://data.ny.gov/resource/8mkn-d32t.json?$where=month>'2018-01'&borough='Manhattan'"
+dataset$busCustomerJourneyMetricsMTA <- "https://data.ny.gov/resource/8mkn-d32t.json?$where=month>'2018-01'&borough='Manhattan'"
 
-performanceKPIByAgencyMTA <- "https://data.ny.gov/resource/cy9b-i9w9.json?$where=period_year > '2017'"
+dataset$performanceKPIByAgencyMTA <- "https://data.ny.gov/resource/cy9b-i9w9.json?$where=period_year > '2017'"
 
-greenTaxiTripData2018 <- "https://data.cityofnewyork.us/resource/w7fs-fd9i.json"
+dataset$greenTaxiTripData2018 <- "https://data.cityofnewyork.us/resource/w7fs-fd9i.json"
 
-yellowTaxiTripData2018 <- "https://data.cityofnewyork.us/resource/t29m-gskq.json"
+dataset$yellowTaxiTripData2018 <- "https://data.cityofnewyork.us/resource/t29m-gskq.json"
 
-FHVTripData2018 <- "https://data.cityofnewyork.us/resource/am94-epxh.json"
+dataset$FHVTripData2018 <- "https://data.cityofnewyork.us/resource/am94-epxh.json"
 
-greenTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/q5mz-t52e.json"
+dataset$greenTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/q5mz-t52e.json"
 
-yellowTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/2upf-qytp.json"
+dataset$yellowTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/2upf-qytp.json"
 
-FHVTripData2019 <- "https://data.cityofnewyork.us/resource/u6nh-b56h.json"
+dataset$FHVTripData2019 <- "https://data.cityofnewyork.us/resource/u6nh-b56h.json"
 
-greenTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/pkmi-4kfn.json"
+dataset$greenTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/pkmi-4kfn.json"
 
-yellowTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/kxp8-n2sj.json"
+dataset$yellowTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/kxp8-n2sj.json"
 
-FHVTripData2020 <- "https://data.cityofnewyork.us/resource/m3yx-mvk4.json"
+dataset$FHVTripData2020 <- "https://data.cityofnewyork.us/resource/m3yx-mvk4.json"
 
-greenTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/djnb-wcxt.json"
+dataset$greenTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/djnb-wcxt.json"
 
-yellowTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/m6nq-qud6.json"
+dataset$yellowTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/m6nq-qud6.json"
 
-FHVTripData2021 <- "https://data.cityofnewyork.us/resource/a444-au9b.json"
+dataset$FHVTripData2021 <- "https://data.cityofnewyork.us/resource/a444-au9b.json"
 
-alternativeFuelStations <- "https://data.ny.gov/resource/bpkx-gmh7.json?$where=city='Manhattan' or city='New York'"
+dataset$alternativeFuelStations <- "https://data.ny.gov/resource/bpkx-gmh7.json?$where=city='Manhattan' or city='New York'"
 
 ```
+
+```{r}
+# Convert list to data.frame
+dataset <- stack(dataset)[, c("ind", "values")]
+names(dataset) <- c("feature_name", "feature_url")
+dataset$feature_name <- as.character(dataset$feature_name)
+dataset$feature_url <- as.character(dataset$feature_url)
+```
+
+```{r}
+setwd("C:/Users/divya_rustagi/Desktop/capstone/DS440-Transfer-Learning-Address-Sustainability-Issues")
+```
+
+
+```{r}
+name <- dataset[1,]$feature_name
+fname <- filename(x = name, path = "./data/raw", 
+                     ext = "csv", date = NA, 
+                     time = NA, subdir = FALSE)
+
+as.character(fname)
+
+name
+```
+
+
+```{r}
+for (i in 1:nrow(dataset)){
+  url <- dataset[i,]$feature_url
+  name <- dataset[i,]$feature_name
+  print(paste("Loading dataset:", name, sep = " "))
+  data <- read.socrata(url = url,  
+                      email  = soc_email,
+                      password = soc_pass,
+                      app_token = soc_token)
+  print(names(data))
+  
+  fname <- filename(x = name, path = "./data/raw", 
+                     ext = "RDS", date = NA, 
+                     time = NA, subdir = FALSE)
+  
+  print(paste("Saving dataset:", name, sep = " "))
+  saveRDS(data, file = as.character(fname))
+  print("Dataset saved successfully!")
+
+}
+```
+
 
 ```{r}
 data  <- read.socrata(url = commercialBicycleInspections,  
