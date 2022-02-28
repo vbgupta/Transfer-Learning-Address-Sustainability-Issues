@@ -1,0 +1,235 @@
+---
+title: "New York City AQI Data Exploration"
+output: html_notebook
+---
+
+### Environment Setup
+
+```{r warning=FALSE}
+# Load Libraries
+library(RSocrata)
+library(aqsr)
+library(usethis)
+library(devtools)
+library(data.table)
+library(tidyverse)
+library(DataExplorer)
+```
+
+```{r}
+# Store API user emails, tokens, passwords
+soc_token <- Sys.getenv("SOCRATA_TOKEN")
+soc_email <- Sys.getenv("SOCRATA_EMAIL")
+
+soc_pass <- Sys.getenv("SOCRATA_PASSWORD")
+aqs_key <- Sys.getenv("AQS_KEY")
+aqs_email <- Sys.getenv("AQS_EMAIL")
+```
+
+To use New York's Air Quality System (AQS), we set up a user account.
+
+```{r}
+# Create Users
+aqs_user <- create_user(email=aqs_email,
+                    key=aqs_key)
+```
+
+### Filter Parameters
+
+**DESCRIPTION** - New York County Data Between Jan 1, 2018 and Jan 1, 2022
+
+**BOROUGH** - MANHATTAN
+
+**COUNTY** - NEW YORK
+
+**STATE** - NEW YORK (NY)
+
+```{r}
+# Constants
+BOROUGH <- "Manhattan"
+COUNTY <- "New York"
+STATE <- "New York"
+TIME_LIST <- data.frame(jan18 = "2018-01-01", 
+               dec18 = "2018-12-31",
+               jan19 = "2019-01-01", 
+               dec19 = "2019-12-31",
+               jan20 = "2020-01-01", 
+               dec20 = "2020-12-31",
+               jan21 = "2021-01-01", 
+               dec21 = "2021-12-31",
+               jan22 = "2022-01-01")
+
+TIME_START <- TIME_LIST$jan18
+TIME_END <- TIME_LIST$jan22
+```
+
+
+### Extracting Data 
+```{r}
+# New York County Identifiers
+state_fips <- data.table(aqs_list_states(aqs_user))
+ny_fips_code <- state_fips[value_represented == STATE]$code
+ny_counties <- data.table(aqs_list_counties(aqs_user, state=ny_fips_code))
+nyCounty_fips_code <- ny_counties[value_represented == COUNTY]$code
+```
+
+```{r}
+
+```
+
+## Dataset URLs
+
+```{r}
+bridgeHoldLocStipulations <- "https://data.cityofnewyork.us/resource/ge3f-inui.json?boroughname=MANHTTAN"
+
+busBreakdownsDelays <- "https://data.cityofnewyork.us/resource/ez4e-fazm.json?boro=Manhattan&$where=created_on between '2018-01-01' and '2022-01-01'"
+
+commercialBicycleInspections <- "https://data.cityofnewyork.us/resource/tg3t-nh4h.json?borough=Manhattan&$where=inspectiondate between '2018-01-01' and '2022-01-01'"
+
+streetConstructionPermits <- "https://data.cityofnewyork.us/resource/tqtj-sjs8.json?boroughname=MANHATTAN&$where=createdon between'2018-01-01' and '2022-01-01'"
+
+motorCrashes <- "https://data.cityofnewyork.us/resource/h9gi-nx95.json?borough=MANHATTAN&$where=crash_date between '2018-01-01' and '2022-01-01'"
+
+linkNYCKioskStatus <- "https://data.cityofnewyork.us/resource/quxm-hmyr.json?borough=MANHATTAN&$where=generated_on  '2022'"
+
+speedReducerTracking <- "https://data.cityofnewyork.us/resource/9n6h-pt9g.json?borough=Manhattan"
+
+serviceRequests311 <- "https://data.cityofnewyork.us/resource/erm2-nwe9.json?borough=MANHATTAN"
+
+gasRetailPriceWeekly <- "https://data.ny.gov/resource/nqur-w4p7.json?$where=date between '2018-01-01' and '2022-01-01'"
+
+dieselRetailPriceWeekly <- "https://data.ny.gov/resource/dtfv-pchi.json?$where=date between '2018-01-01' and '2022-01-01'"
+
+bulkStorageFacilities <- "https://data.ny.gov/resource/pteg-c78n.json?county=NEW YORK"
+
+spillIncidents <- "https://data.ny.gov/resource/u44d-k5fk.json?$where=spill_date>'2018-01-01'&county=New York"
+
+hourlyTrafficMTA <- "https://data.ny.gov/resource/qzve-kjga.json?$where=date between '2018-01-01' and '2022-01-01'"
+
+subwayCustomerJourneyMTA <- "https://data.ny.gov/resource/r7qk-6tcy.json?$where=month>'2017-01'"
+
+nypaNetGenerationByFacility <- "https://data.ny.gov/resource/isux-jnrn.json?$where=year>'2017'"
+
+utilityBaseRateChangeByCompany <- "https://data.ny.gov/resource/ddrw-g9a6.json?$where=date_effective between '2018-01-01' and '2022-01-01'"
+
+keyCreditCollection <- "https://data.ny.gov/resource/kdjh-dhwi.json?$where=year>2017"
+
+waterWells <- "https://data.ny.gov/resource/6gke-uhe4.json?county=New York"
+
+wastewaterTreatment <- "https://data.ny.gov/resource/2v6p-juki.json?city=NEW YORK"
+
+nyMTAEvents511 <- "https://data.ny.gov/resource/i8wu-pqzv.json?$where=create_time>'2018-01-01'&county=New York"
+
+busCustomerJourneyMetricsMTA <- "https://data.ny.gov/resource/8mkn-d32t.json?$where=month>'2018-01'&borough='Manhattan'"
+
+performanceKPIByAgencyMTA <- "https://data.ny.gov/resource/cy9b-i9w9.json?$where=period_year > '2017'"
+
+greenTaxiTripData2018 <- "https://data.cityofnewyork.us/resource/w7fs-fd9i.json"
+
+yellowTaxiTripData2018 <- "https://data.cityofnewyork.us/resource/t29m-gskq.json"
+
+FHVTripData2018 <- "https://data.cityofnewyork.us/resource/am94-epxh.json"
+
+greenTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/q5mz-t52e.json"
+
+yellowTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/2upf-qytp.json"
+
+FHVTripData2019 <- "https://data.cityofnewyork.us/resource/u6nh-b56h.json"
+
+greenTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/pkmi-4kfn.json"
+
+yellowTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/kxp8-n2sj.json"
+
+FHVTripData2020 <- "https://data.cityofnewyork.us/resource/m3yx-mvk4.json"
+
+greenTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/djnb-wcxt.json"
+
+yellowTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/m6nq-qud6.json"
+
+FHVTripData2021 <- "https://data.cityofnewyork.us/resource/a444-au9b.json"
+
+alternativeFuelStations <- "https://data.ny.gov/resource/bpkx-gmh7.json?$where=city='Manhattan' or city='New York'"
+
+```
+
+```{r}
+data  <- read.socrata(url = commercialBicycleInspections,  
+                      email  = soc_email,
+                      password = soc_pass,
+                      app_token = soc_token)
+
+nrow(data)
+saveRDS(data, "feature5.csv")
+```
+
+```{r}
+head(data)
+create_report(data)
+```
+
+```{r}
+features <- profile_missing(data) %>% filter(pct_missing < 0.35)
+features$feature
+```
+
+```{r}
+streetConstructionPermits <- data[features$feature]
+```
+
+### AQI Data
+```{r}
+aqi_pollutants <- aqs_list_parameters(aqs_user, pc="AQI POLLUTANTS")
+aqi_forecast <- aqs_list_parameters(aqs_user, pc="FORECAST")
+```
+
+```{r}
+s2 <- aqs_dailyData(aqs_user=aqs_user,
+                     endpoint="byCounty",
+                     state=ny_fips_code,
+                     county=nyCounty_fips_code,
+                     bdate="20160101",
+                     edate="20161231",
+                     param=aqi_pollutants$code[1])
+```
+
+### Road Networks 
+```{r}
+# Read this shape file with the rgdal library. 
+library(rgdal)
+
+my_spdf <- readOGR( 
+  dsn= paste0(getwd(), "/data/citymap_citymap_v1") , 
+  layer="citymap_citymap_v1",
+  verbose=FALSE)
+```
+
+```{r}
+# Basic plot of this shape file:
+par(mar=c(0,0,0,0))
+plot(my_spdf, col="#f2f2f2", bg="black", lwd=0.25 )
+```
+
+```{r}
+head(my_spdf)
+```
+
+```{r}
+nyC_map <- my_spdf[my_spdf$boro_nm == BOROUGH]
+
+is_(my_spdf$boro_nm == BOROUGH )
+
+str(my_spdf)
+
+names(my_spdf)
+
+unique(my_spdf$ownership_)
+
+my_spdf
+```
+
+
+```{r}
+# Basic plot of this shape file:
+par(mar=c(0,0,0,0))
+plot(nyC_map, col="#f2f2f2", bg="black", lwd=0.25 )
+```
