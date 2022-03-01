@@ -1,5 +1,0 @@
-server = 'sustprediction.database.windows.net'
-database = 'sustainability'
-username = 'capstone'
-password = '{ds440@grp6}'   
-driver= '{ODBC Driver 17 for SQL Server}'
