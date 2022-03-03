@@ -77,6 +77,9 @@ nyCounty_fips_code <- ny_counties[value_represented == COUNTY]$code
 ```
 
 ## Dataset URLs
+
+We have compiled a list of data sets we'd like to explore for this analysis. Each URL contains a query to filter down the records between Jan 1 2018 and Jan 1 2022, and in Manhattan borough or New York county, or New York City.
+
 ```{r}
 # Empty list to store urls
 dataset <- list()
@@ -93,8 +96,6 @@ dataset$commercialBicycleInspections <- "https://data.cityofnewyork.us/resource/
 dataset$streetConstructionPermits <- "https://data.cityofnewyork.us/resource/tqtj-sjs8.json?boroughname=MANHATTAN&$where=createdon between'2018-01-01' and '2022-01-01'"
 
 dataset$motorCrashes <- "https://data.cityofnewyork.us/resource/h9gi-nx95.json?borough=MANHATTAN&$where=crash_date between '2018-01-01' and '2022-01-01'"
-
-#dataset$linkNYCKioskStatus <- "https://data.cityofnewyork.us/resource/quxm-hmyr.json?borough=MANHATTAN&$where=generated_on '2022'"
 
 dataset$speedReducerTracking <- "https://data.cityofnewyork.us/resource/9n6h-pt9g.json?borough=Manhattan"
 
@@ -156,6 +157,7 @@ dataset$alternativeFuelStations <- "https://data.ny.gov/resource/bpkx-gmh7.json?
 
 ```
 
+We will now store and save a data set of URLs.
 ```{r}
 # Convert list to data.frame
 dataset <- stack(dataset)[, c("ind", "values")]
@@ -165,45 +167,31 @@ dataset$feature_url <- as.character(dataset$feature_url)
 ```
 
 ```{r}
-dataset$feature_name
+# Save data urls for future reference
+saveRDS(dataset, file="./data/raw/dataset_urls.csv")
 ```
 
-```{r}
-df <- dataset
-dataset <- dataset[25:33,]
-dataset
-```
+
+## Download Data From URLs
+
+Download the URLs onto disk, to avoid storing in R memory. Taxi records are >100+ million, so downloading on disk would be faster. You can see status of download in print comments.
 
 ```{r}
-setwd("C:/Users/divya_rustagi/Desktop/capstone/DS440-Transfer-Learning-Address-Sustainability-Issues")
-
+# Run this chunk only once
 for (i in 1:nrow(dataset)){
   url <- dataset[i,]$feature_url
   name <- dataset[i,]$feature_name
   print(paste("Loading dataset:", name, sep = " "))
-  #count <- read.socrata()
-  #data <- read.socrata(url = url,  
-                      # email  = soc_email,
-                      # password = soc_pass,
-                      # app_token = soc_token)
-  #print(names(data))
-  
+
   fname <- filename(x = name, path = "./data/raw", 
                      ext = "RDS", date = NA, 
                      time = NA, subdir = FALSE)
-  
   print(paste("Saving dataset:", name, sep = " "))
   download.file(url, as.character(fname))
-  #saveRDS(data, file = as.character(fname))
   print("Dataset saved successfully!")
 
 }
 ```
-
-```{r}
-dataset <- df
-```
-
 
 ```{r}
 yellowTaxiTripData2018 <- readRDS("C:/Users/divya_rustagi/Desktop/capstone/DS440-Transfer-Learning-Address-Sustainability-Issues/data/raw/yellowTaxiTripData2018.RDS")
@@ -212,6 +200,7 @@ nrow(yellowTaxiTripData2018)
 head(yellowTaxiTripData2018)
 ```
 
+# Exploratory Data Analysis
 ```{r}
 head(data)
 create_report(data)
