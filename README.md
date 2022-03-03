@@ -1,6 +1,5 @@
 # DS440-Transfer-Learning-Address-Sustainability-Issues
 PSU DS440 Capstone Project Repository
-
 ### Tools For Database Management
 **Install Git Large File Storage (LFS)**
 

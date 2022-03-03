@@ -15,6 +15,8 @@ library(data.table)
 library(tidyverse)
 library(DataExplorer)
 library(filenamer)
+library(validate)
+library(request)
 ```
 
 ```{r}
@@ -92,7 +94,7 @@ dataset$streetConstructionPermits <- "https://data.cityofnewyork.us/resource/tqt
 
 dataset$motorCrashes <- "https://data.cityofnewyork.us/resource/h9gi-nx95.json?borough=MANHATTAN&$where=crash_date between '2018-01-01' and '2022-01-01'"
 
-dataset$linkNYCKioskStatus <- "https://data.cityofnewyork.us/resource/quxm-hmyr.json?borough=MANHATTAN&$where=generated_on  '2022'"
+#dataset$linkNYCKioskStatus <- "https://data.cityofnewyork.us/resource/quxm-hmyr.json?borough=MANHATTAN&$where=generated_on '2022'"
 
 dataset$speedReducerTracking <- "https://data.cityofnewyork.us/resource/9n6h-pt9g.json?borough=Manhattan"
 
@@ -128,27 +130,27 @@ dataset$performanceKPIByAgencyMTA <- "https://data.ny.gov/resource/cy9b-i9w9.jso
 
 dataset$greenTaxiTripData2018 <- "https://data.cityofnewyork.us/resource/w7fs-fd9i.json"
 
-dataset$yellowTaxiTripData2018 <- "https://data.cityofnewyork.us/resource/t29m-gskq.json"
+dataset$yellowTaxiTripData2018 <- "https://data.cityofnewyork.us/resource/t29m-gskq.json?$limit=100000000&$offset=105000000&$order=:id"
 
-dataset$FHVTripData2018 <- "https://data.cityofnewyork.us/resource/am94-epxh.json"
+dataset$FHVTripData2018 <- "https://data.cityofnewyork.us/resource/am94-epxh.json?$limit=100000000&$offset=105000000&$order=:id"
 
-dataset$greenTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/q5mz-t52e.json"
+dataset$greenTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/q5mz-t52e.json?$limit=100000000&$offset=105000000&$order=:id"
 
-dataset$yellowTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/2upf-qytp.json"
+dataset$yellowTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/2upf-qytp.json?$limit=100000000&$offset=105000000&$order=:id"
 
-dataset$FHVTripData2019 <- "https://data.cityofnewyork.us/resource/u6nh-b56h.json"
+dataset$FHVTripData2019 <- "https://data.cityofnewyork.us/resource/u6nh-b56h.json?$limit=100000000&$offset=105000000&$order=:id"
 
-dataset$greenTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/pkmi-4kfn.json"
+dataset$greenTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/pkmi-4kfn.json?$limit=100000000&$offset=105000000&$order=:id"
 
-dataset$yellowTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/kxp8-n2sj.json"
+dataset$yellowTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/kxp8-n2sj.json?$limit=100000000&$offset=105000000&$order=:id"
 
-dataset$FHVTripData2020 <- "https://data.cityofnewyork.us/resource/m3yx-mvk4.json"
+dataset$FHVTripData2020 <- "https://data.cityofnewyork.us/resource/m3yx-mvk4.json?$limit=100000000&$offset=105000000&$order=:id"
 
-dataset$greenTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/djnb-wcxt.json"
+dataset$greenTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/djnb-wcxt.json?$limit=100000000&$offset=105000000&$order=:id"
 
-dataset$yellowTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/m6nq-qud6.json"
+dataset$yellowTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/m6nq-qud6.json?$limit=100000000&$offset=105000000&$order=:id"
 
-dataset$FHVTripData2021 <- "https://data.cityofnewyork.us/resource/a444-au9b.json"
+dataset$FHVTripData2021 <- "https://data.cityofnewyork.us/resource/a444-au9b.json?$limit=100000000&$offset=105000000&$order=:id"
 
 dataset$alternativeFuelStations <- "https://data.ny.gov/resource/bpkx-gmh7.json?$where=city='Manhattan' or city='New York'"
 
@@ -163,53 +165,51 @@ dataset$feature_url <- as.character(dataset$feature_url)
 ```
 
 ```{r}
+dataset$feature_name
+```
+
+```{r}
+df <- dataset
+dataset <- dataset[25:33,]
+dataset
+```
+
+```{r}
 setwd("C:/Users/divya_rustagi/Desktop/capstone/DS440-Transfer-Learning-Address-Sustainability-Issues")
-```
 
-
-```{r}
-name <- dataset[1,]$feature_name
-fname <- filename(x = name, path = "./data/raw", 
-                     ext = "csv", date = NA, 
-                     time = NA, subdir = FALSE)
-
-as.character(fname)
-
-name
-```
-
-
-```{r}
 for (i in 1:nrow(dataset)){
   url <- dataset[i,]$feature_url
   name <- dataset[i,]$feature_name
   print(paste("Loading dataset:", name, sep = " "))
-  data <- read.socrata(url = url,  
-                      email  = soc_email,
-                      password = soc_pass,
-                      app_token = soc_token)
-  print(names(data))
+  #count <- read.socrata()
+  #data <- read.socrata(url = url,  
+                      # email  = soc_email,
+                      # password = soc_pass,
+                      # app_token = soc_token)
+  #print(names(data))
   
   fname <- filename(x = name, path = "./data/raw", 
                      ext = "RDS", date = NA, 
                      time = NA, subdir = FALSE)
   
   print(paste("Saving dataset:", name, sep = " "))
-  saveRDS(data, file = as.character(fname))
+  download.file(url, as.character(fname))
+  #saveRDS(data, file = as.character(fname))
   print("Dataset saved successfully!")
 
 }
 ```
 
+```{r}
+dataset <- df
+```
+
 
 ```{r}
-data  <- read.socrata(url = commercialBicycleInspections,  
-                      email  = soc_email,
-                      password = soc_pass,
-                      app_token = soc_token)
+yellowTaxiTripData2018 <- readRDS("C:/Users/divya_rustagi/Desktop/capstone/DS440-Transfer-Learning-Address-Sustainability-Issues/data/raw/yellowTaxiTripData2018.RDS")
 
-nrow(data)
-saveRDS(data, "feature5.csv")
+nrow(yellowTaxiTripData2018)
+head(yellowTaxiTripData2018)
 ```
 
 ```{r}
