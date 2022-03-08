@@ -1,0 +1,132 @@
+---
+title: "New York City AQI Data Exploration"
+output: html_notebook
+---
+
+### Environment Setup
+
+```{r warning=FALSE}
+# Load Libraries
+library(RSocrata)
+library(aqsr)
+library(usethis)
+library(devtools)
+library(data.table)
+library(tidyverse)
+library(DataExplorer)
+library(filenamer)
+library(validate)
+library(request)
+```
+
+## Dataset URLs
+
+We have compiled a list of data sets we'd like to explore for this analysis. Each URL contains a query to filter down the records between Jan 1 2018 and Jan 1 2022, and in Manhattan borough or New York county, or New York City.
+
+```{r}
+source("./api/nyc_dataset_urls.R")
+dataset <- readRDS("./api/nyc_dataset_urls.csv")
+```
+
+## Download Data From URLs
+
+Download the URLs onto disk, to avoid storing in R memory. Taxi records are >100+ million, so downloading on disk would be faster. You can see status of download in print comments.
+
+```{r}
+source("./api/dataset_downloads.R")
+dataset_list <- readRDS("./api/nyc_dataset_list.csv")
+```
+
+# Exploratory Data Analysis
+
+```{r}
+fhv1_18 <- readRDS("./data/raw/taxi/FHVTripData2018.RDS")
+fhv1_19 <- read_file("./data/raw/taxi/FHVTripData2019.RDS")
+fhv1_20 <- readRDS("./data/raw/taxi/FHVTripData2020.RDS")
+fhv1_21 <- readRDS("./data/raw/taxi/FHVTripData2020.RDS")
+
+fhv2_19 <- readRDS("./data/raw/taxi2/FHVTripData2019.RDS")
+fhv2_20 <- readRDS("./data/raw/taxi2/FHVTripData2020.RDS")
+fhv2_21 <- readRDS("./data/raw/taxi2/FHVTripData2020.RDS")
+
+fhv3_19 <- readRDS("./data/raw/FHVTripData2019.RDS")
+fhv3_20 <- readRDS("./data/raw/FHVTripData2020.RDS")
+fhv3_21 <- readRDS("./data/raw/FHVTripData2020.RDS")
+
+```
+
+```{r}
+head(fhv1_19)
+```
+
+```{r}
+head(data)
+create_report(data)
+```
+
+```{r}
+features <- profile_missing(data) %>% filter(pct_missing < 0.35)
+features$feature
+```
+
+```{r}
+streetConstructionPermits <- data[features$feature]
+```
+
+### AQI Data
+```{r}
+aqi_pollutants <- aqs_list_parameters(aqs_user, pc="AQI POLLUTANTS")
+aqi_forecast <- aqs_list_parameters(aqs_user, pc="FORECAST")
+```
+
+```{r}
+s2 <- aqs_dailyData(aqs_user=aqs_user,
+                     endpoint="byCounty",
+                     state=ny_fips_code,
+                     county=nyCounty_fips_code,
+                     bdate="20160101",
+                     edate="20161231",
+                     param=aqi_pollutants$code[1])
+```
+
+### Road Networks 
+```{r}
+# Read this shape file with the rgdal library. 
+library(rgdal)
+
+my_spdf <- readOGR( 
+  dsn= paste0(getwd(), "/data/citymap_citymap_v1") , 
+  layer="citymap_citymap_v1",
+  verbose=FALSE)
+```
+
+```{r}
+# Basic plot of this shape file:
+par(mar=c(0,0,0,0))
+plot(my_spdf, col="#f2f2f2", bg="black", lwd=0.25 )
+```
+
+```{r}
+head(my_spdf)
+```
+
+```{r}
+nyC_map <- my_spdf[my_spdf$boro_nm == BOROUGH]
+
+is_(my_spdf$boro_nm == BOROUGH )
+
+str(my_spdf)
+
+names(my_spdf)
+
+unique(my_spdf$ownership_)
+
+my_spdf
+```
+
+
+```{r}
+# Basic plot of this shape file:
+par(mar=c(0,0,0,0))
+plot(nyC_map, col="#f2f2f2", bg="black", lwd=0.25 )
+```

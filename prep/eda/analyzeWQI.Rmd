@@ -1,0 +1,31 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r warning=FALSE}
+# Load Libraries
+library(RSocrata)
+library(aqsr)
+library(usethis)
+library(devtools)
+library(data.table)
+library(tidyverse)
+library(DataExplorer)
+library(filenamer)
+library(validate)
+library(request)
+```
+
+# Water Consumption
+
+```{r}
+# factors
+historicLandUse <- "https://data.cityofnewyork.us/Environment/Historic-Land-Use-Data/r9ca-6t4q"
+waterSewerPermits <- "https://data.cityofnewyork.us/resource/4k4u-823g.json"
+
+watershedWaterQualitySites <- "https://data.cityofnewyork.us/resource/kw4v-6nqf.json"
+
+watershedWaterQualityWastewater <- "https://data.cityofnewyork.us/resource/icbf-663g.json"
+
+```
