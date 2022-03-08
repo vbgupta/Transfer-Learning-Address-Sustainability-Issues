@@ -1,5 +1,3 @@
-setwd("C:/Users/divya_rustagi/Desktop/capstone/DS440-Transfer-Learning-Address-Sustainability-Issues")
-
 # Empty list to store urls
 dataset <- list()
 
@@ -79,4 +77,4 @@ dataset$feature_name <- as.character(dataset$feature_name)
 dataset$feature_url <- as.character(dataset$feature_url)
 
 # Save data urls for future reference
-saveRDS(dataset, file="./api/nyc_dataset_urls.csv")
+saveRDS(dataset, file="./api/processed/nyc_dataset_urls.csv")

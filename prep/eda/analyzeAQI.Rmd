@@ -25,16 +25,16 @@ We have compiled a list of data sets we'd like to explore for this analysis. Eac
 
 ```{r}
 source("./api/nyc_dataset_urls.R")
-dataset <- readRDS("./api/nyc_dataset_urls.csv")
+dataset <- readRDS("./api/processed/nyc_dataset_urls.csv")
 ```
 
 ## Download Data From URLs
 
 Download the URLs onto disk, to avoid storing in R memory. Taxi records are >100+ million, so downloading on disk would be faster. You can see status of download in print comments.
 
-```{r}
-source("./api/dataset_downloads.R")
-dataset_list <- readRDS("./api/nyc_dataset_list.csv")
+```{r warning=FALSE}
+source("./api/nyc_dataset_downloads.R")
+dataset_list <- readRDS("./api/processed/nyc_dataset_list.csv")
 ```
 
 # Exploratory Data Analysis
