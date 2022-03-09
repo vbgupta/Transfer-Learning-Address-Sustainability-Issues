@@ -16,8 +16,7 @@
 
 *Scale by US Environmental Protection Agency (EPA)*
 
-<img src = "https://user-images.githubusercontent.com/49132244/157536202-9a6c4c69-62fe-4689-8aff-525b79f6790f.png" width="450" height="250">
-
+![image](https://user-images.githubusercontent.com/49132244/157559174-ec5cb151-64b4-47c5-b325-421464a5a958.png)
 
 ### Tools For Database Management
 **Install Git Large File Storage (LFS)**
