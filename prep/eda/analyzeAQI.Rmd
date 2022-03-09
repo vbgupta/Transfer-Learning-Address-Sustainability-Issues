@@ -17,6 +17,7 @@ library(DataExplorer)
 library(filenamer)
 library(validate)
 library(request)
+library(downloader)
 ```
 
 ## Dataset URLs
@@ -25,7 +26,6 @@ We have compiled a list of data sets we'd like to explore for this analysis. Eac
 
 ```{r}
 source("./api/nyc_dataset_urls.R")
-dataset <- readRDS("./api/processed/nyc_dataset_urls.csv")
 ```
 
 ## Download Data From URLs
@@ -33,26 +33,22 @@ dataset <- readRDS("./api/processed/nyc_dataset_urls.csv")
 Download the URLs onto disk, to avoid storing in R memory. Taxi records are >100+ million, so downloading on disk would be faster. You can see status of download in print comments.
 
 ```{r warning=FALSE}
-source("./api/nyc_dataset_downloads.R")
-dataset_list <- readRDS("./api/processed/nyc_dataset_list.csv")
+#source("./api/nyc_dataset_downloads.R")
+dataset <- readRDS("./api/processed/nyc_dataset_list.csv")
 ```
 
 # Exploratory Data Analysis
 
 ```{r}
-fhv1_18 <- readRDS("./data/raw/taxi/FHVTripData2018.RDS")
-fhv1_19 <- read_file("./data/raw/taxi/FHVTripData2019.RDS")
-fhv1_20 <- readRDS("./data/raw/taxi/FHVTripData2020.RDS")
-fhv1_21 <- readRDS("./data/raw/taxi/FHVTripData2020.RDS")
+# store data
+dataset$loc
 
-fhv2_19 <- readRDS("./data/raw/taxi2/FHVTripData2019.RDS")
-fhv2_20 <- readRDS("./data/raw/taxi2/FHVTripData2020.RDS")
-fhv2_21 <- readRDS("./data/raw/taxi2/FHVTripData2020.RDS")
-
-fhv3_19 <- readRDS("./data/raw/FHVTripData2019.RDS")
-fhv3_20 <- readRDS("./data/raw/FHVTripData2020.RDS")
-fhv3_21 <- readRDS("./data/raw/FHVTripData2020.RDS")
-
+for (i in 1:nrow(dataset)){
+  name <- dataset[i,]$feature_name
+  readRDS(name, dataset[i,]$loc)
+  
+  print("Dataset saved successfully!")
+}
 ```
 
 ```{r}

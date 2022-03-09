@@ -44,29 +44,29 @@ dataset$busCustomerJourneyMetricsMTA <- "https://data.ny.gov/resource/8mkn-d32t.
 
 dataset$performanceKPIByAgencyMTA <- "https://data.ny.gov/resource/cy9b-i9w9.json?$where=period_year > '2017'"
 
-dataset$greenTaxiTripData2018 <- "https://data.cityofnewyork.us/resource/w7fs-fd9i.json"
+dataset$greenTaxiTripData2018 <- "https://data.cityofnewyork.us/resource/w7fs-fd9i.json?$limit=8900000&$offset=0&$order=:id"
 
-dataset$yellowTaxiTripData2018 <- "https://data.cityofnewyork.us/resource/t29m-gskq.json?$limit=100000000&$offset=105000000&$order=:id"
+dataset$yellowTaxiTripData2018 <- "https://data.cityofnewyork.us/resource/t29m-gskq.json?$limit=100000000&$offset=0&$order=:id"
 
-dataset$FHVTripData2018 <- "https://data.cityofnewyork.us/resource/am94-epxh.json?$limit=100000000&$offset=105000000&$order=:id"
+dataset$FHVTripData2018 <- "https://data.cityofnewyork.us/resource/am94-epxh.json?$limit=10000000&$offset=0&$order=:id"
 
-dataset$greenTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/q5mz-t52e.json?$limit=100000000&$offset=105000000&$order=:id"
+dataset$greenTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/q5mz-t52e.json?$limit=6100000&$offset=0&$order=:id"
 
-dataset$yellowTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/2upf-qytp.json?$limit=100000000&$offset=105000000&$order=:id"
+dataset$yellowTaxiTripData2019 <- "https://data.cityofnewyork.us/resource/2upf-qytp.json?$limit=85000000&$offset=0&$order=:id"
 
-dataset$FHVTripData2019 <- "https://data.cityofnewyork.us/resource/u6nh-b56h.json?$limit=100000000&$offset=105000000&$order=:id"
+dataset$FHVTripData2019 <- "https://data.cityofnewyork.us/resource/u6nh-b56h.json?$limit=42200000&$offset=0&$order=:id"
 
-dataset$greenTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/pkmi-4kfn.json?$limit=100000000&$offset=105000000&$order=:id"
+dataset$greenTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/pkmi-4kfn.json?$limit=1800000&$offset=0&$order=:id"
 
-dataset$yellowTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/kxp8-n2sj.json?$limit=100000000&$offset=105000000&$order=:id"
+dataset$yellowTaxiTripData2020 <- "https://data.cityofnewyork.us/resource/kxp8-n2sj.json?$limit=26000000&$offset=0&$order=:id"
 
-dataset$FHVTripData2020 <- "https://data.cityofnewyork.us/resource/m3yx-mvk4.json?$limit=100000000&$offset=105000000&$order=:id"
+dataset$FHVTripData2020 <- "https://data.cityofnewyork.us/resource/m3yx-mvk4.json?$limit=15000000&$offset=0&$order=:id"
 
-dataset$greenTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/djnb-wcxt.json?$limit=100000000&$offset=105000000&$order=:id"
+dataset$greenTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/djnb-wcxt.json?$limit=600000&$offset=0&$order=:id"
 
-dataset$yellowTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/m6nq-qud6.json?$limit=100000000&$offset=105000000&$order=:id"
+dataset$yellowTaxiTripData2021 <- "https://data.cityofnewyork.us/resource/m6nq-qud6.json?$limit=26000000&$offset=0&$order=:id"
 
-dataset$FHVTripData2021 <- "https://data.cityofnewyork.us/resource/a444-au9b.json?$limit=100000000&$offset=105000000&$order=:id"
+dataset$FHVTripData2021 <- "https://data.cityofnewyork.us/resource/a444-au9b.json?$limit=8500000&$offset=0&$order=:id"
 
 dataset$alternativeFuelStations <- "https://data.ny.gov/resource/bpkx-gmh7.json?$where=city='Manhattan' or city='New York'"
 
@@ -77,4 +77,4 @@ dataset$feature_name <- as.character(dataset$feature_name)
 dataset$feature_url <- as.character(dataset$feature_url)
 
 # Save data urls for future reference
-saveRDS(dataset, file="./api/processed/nyc_dataset_urls.csv")
+saveRDS(dataset, "./api/processed/nyc_dataset_urls.csv")

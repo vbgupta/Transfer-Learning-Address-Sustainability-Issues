@@ -9,6 +9,7 @@ library(DataExplorer)
 library(filenamer)
 library(validate)
 library(request)
+library(downloader)
 
 ### To use New York's Air Quality System (AQS), we set up a user account.
 # Store API user emails, tokens, passwords
@@ -57,24 +58,29 @@ saveRDS(identifiers, "./api/processed/nyc_identifiers.csv")
 
 # Retrieve dataset urls
 dataset <- readRDS("./api/processed/nyc_dataset_urls.csv")
+dataset$loc <- ""
 
 # Download the URLs onto disk, to avoid storing in R memory.
 # Taxi records are >100+ million, so downloading on disk would be faster.
 # You can see status of download in print comments.
+df_2018 <- dataset[22:24,]
+dataset <- dataset[-c(22:24),]
 
 for (i in 1:nrow(dataset)){
+
+  if(dataset[i,]$loc == ""){
   url <- dataset[i,]$feature_url
   name <- dataset[i,]$feature_name
   print(paste("Loading dataset:", name, sep = " "))
 
   fname <- filename(x = name, path = "./data/raw",
-                     ext = ".csv", date = NA,
+                     ext = "json", date = NA,
                      time = NA, subdir = FALSE)
 
   print(paste("Saving dataset:", name, sep = " "))
   dataset[i, ]$loc <- as.character(fname)
-  ##download.file(url, as.character(fname))
-  print("Dataset saved successfully!")
+  download(url, as.character(fname))
+  print("Dataset saved successfully!") }
 }
-
+dataset <- rbind(dataset, df_2018)
 saveRDS(dataset, file="./api/processed/nyc_dataset_list.csv")

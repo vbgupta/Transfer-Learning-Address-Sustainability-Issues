@@ -219,7 +219,7 @@ pre code {
 <h3>Environment Setup</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBMb2FkIExpYnJhcmllc1xubGlicmFyeShSU29jcmF0YSlcbmxpYnJhcnkoYXFzcilcbmxpYnJhcnkodXNldGhpcylcbmxpYnJhcnkoZGV2dG9vbHMpXG5saWJyYXJ5KGRhdGEudGFibGUpXG5saWJyYXJ5KHRpZHl2ZXJzZSlcbmxpYnJhcnkoRGF0YUV4cGxvcmVyKVxubGlicmFyeShmaWxlbmFtZXIpXG5saWJyYXJ5KHZhbGlkYXRlKVxubGlicmFyeShyZXF1ZXN0KVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBMb2FkIExpYnJhcmllc1xubGlicmFyeShSU29jcmF0YSlcbmxpYnJhcnkoYXFzcilcbmxpYnJhcnkodXNldGhpcylcbmxpYnJhcnkoZGV2dG9vbHMpXG5saWJyYXJ5KGRhdGEudGFibGUpXG5saWJyYXJ5KHRpZHl2ZXJzZSlcbmxpYnJhcnkoRGF0YUV4cGxvcmVyKVxubGlicmFyeShmaWxlbmFtZXIpXG5saWJyYXJ5KHZhbGlkYXRlKVxubGlicmFyeShyZXF1ZXN0KVxubGlicmFyeShkb3dubG9hZGVyKVxuYGBgIn0= -->
 <pre class="r"><code># Load Libraries
 library(RSocrata)
 library(aqsr)
@@ -230,7 +230,8 @@ library(tidyverse)
 library(DataExplorer)
 library(filenamer)
 library(validate)
-library(request)</code></pre>
+library(request)
+library(downloader)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -240,9 +241,8 @@ library(request)</code></pre>
 <p>We have compiled a list of data sets we’d like to explore for this analysis. Each URL contains a query to filter down the records between Jan 1 2018 and Jan 1 2022, and in Manhattan borough or New York county, or New York City.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc291cmNlKFwiLi9hcGkvbnljX2RhdGFzZXRfdXJscy5SXCIpXG5kYXRhc2V0IDwtIHJlYWRSRFMoXCIuL2FwaS9wcm9jZXNzZWQvbnljX2RhdGFzZXRfdXJscy5jc3ZcIilcbmBgYCJ9 -->
-<pre class="r"><code>source(&quot;./api/nyc_dataset_urls.R&quot;)
-dataset &lt;- readRDS(&quot;./api/processed/nyc_dataset_urls.csv&quot;)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc291cmNlKFwiLi9hcGkvbnljX2RhdGFzZXRfdXJscy5SXCIpXG5gYGAifQ== -->
+<pre class="r"><code>source(&quot;./api/nyc_dataset_urls.R&quot;)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -252,9 +252,9 @@ dataset &lt;- readRDS(&quot;./api/processed/nyc_dataset_urls.csv&quot;)</code></
 <p>Download the URLs onto disk, to avoid storing in R memory. Taxi records are &gt;100+ million, so downloading on disk would be faster. You can see status of download in print comments.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc291cmNlKFwiLi9hcGkvbnljX2RhdGFzZXRfZG93bmxvYWRzLlJcIilcbmRhdGFzZXRfbGlzdCA8LSByZWFkUkRTKFwiLi9hcGkvcHJvY2Vzc2VkL255Y19kYXRhc2V0X2xpc3QuY3N2XCIpXG5gYGAifQ== -->
-<pre class="r"><code>source(&quot;./api/nyc_dataset_downloads.R&quot;)
-dataset_list &lt;- readRDS(&quot;./api/processed/nyc_dataset_list.csv&quot;)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI3NvdXJjZShcIi4vYXBpL255Y19kYXRhc2V0X2Rvd25sb2Fkcy5SXCIpXG5kYXRhc2V0IDwtIHJlYWRSRFMoXCIuL2FwaS9wcm9jZXNzZWQvbnljX2RhdGFzZXRfbGlzdC5jc3ZcIilcbmBgYCJ9 -->
+<pre class="r"><code>#source(&quot;./api/nyc_dataset_downloads.R&quot;)
+dataset &lt;- readRDS(&quot;./api/processed/nyc_dataset_list.csv&quot;)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -263,41 +263,19 @@ dataset_list &lt;- readRDS(&quot;./api/processed/nyc_dataset_list.csv&quot;)</co
 <h1>Exploratory Data Analysis</h1>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuZmh2MV8xOCA8LSByZWFkUkRTKFxcLi9kYXRhL3Jhdy90YXhpL0ZIVlRyaXBEYXRhMjAxOC5SRFNcXClcbmZodjFfMTkgPC0gcmVhZF9maWxlKFxcLi9kYXRhL3Jhdy90YXhpL0ZIVlRyaXBEYXRhMjAxOS5SRFNcXClcbmZodjFfMjAgPC0gcmVhZFJEUyhcXC4vZGF0YS9yYXcvdGF4aS9GSFZUcmlwRGF0YTIwMjAuUkRTXFwpXG5maHYxXzIxIDwtIHJlYWRSRFMoXFwuL2RhdGEvcmF3L3RheGkvRkhWVHJpcERhdGEyMDIwLlJEU1xcKVxuXG5maHYyXzE5IDwtIHJlYWRSRFMoXFwuL2RhdGEvcmF3L3RheGkyL0ZIVlRyaXBEYXRhMjAxOS5SRFNcXClcbmZodjJfMjAgPC0gcmVhZFJEUyhcXC4vZGF0YS9yYXcvdGF4aTIvRkhWVHJpcERhdGEyMDIwLlJEU1xcKVxuZmh2Ml8yMSA8LSByZWFkUkRTKFxcLi9kYXRhL3Jhdy90YXhpMi9GSFZUcmlwRGF0YTIwMjAuUkRTXFwpXG5cbmZodjNfMTkgPC0gcmVhZFJEUyhcXC4vZGF0YS9yYXcvRkhWVHJpcERhdGEyMDE5LlJEU1xcKVxuZmh2M18yMCA8LSByZWFkUkRTKFxcLi9kYXRhL3Jhdy9GSFZUcmlwRGF0YTIwMjAuUkRTXFwpXG5maHYzXzIxIDwtIHJlYWRSRFMoXFwuL2RhdGEvcmF3L0ZIVlRyaXBEYXRhMjAyMC5SRFNcXClcblxuYGBgXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBzdG9yZSBkYXRhXG5kYXRhc2V0JGxvY1xuYGBgIn0= -->
+<pre class="r"><code># store data
+dataset$loc</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3I6IG9iamVjdCAnZGF0YXNldCcgbm90IGZvdW5kXG4ifQ== -->
+<pre><code>Error: object &#39;dataset&#39; not found</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuaGVhZChmaHYxXzE5KVxuYGBgXG5gYGAifQ== -->
 <pre class="r"><code>```r
-fhv1_18 &lt;- readRDS(\./data/raw/taxi/FHVTripData2018.RDS\)
-fhv1_19 &lt;- read_file(\./data/raw/taxi/FHVTripData2019.RDS\)
-fhv1_20 &lt;- readRDS(\./data/raw/taxi/FHVTripData2020.RDS\)
-fhv1_21 &lt;- readRDS(\./data/raw/taxi/FHVTripData2020.RDS\)
-
-fhv2_19 &lt;- readRDS(\./data/raw/taxi2/FHVTripData2019.RDS\)
-fhv2_20 &lt;- readRDS(\./data/raw/taxi2/FHVTripData2020.RDS\)
-fhv2_21 &lt;- readRDS(\./data/raw/taxi2/FHVTripData2020.RDS\)
-
-fhv3_19 &lt;- readRDS(\./data/raw/FHVTripData2019.RDS\)
-fhv3_20 &lt;- readRDS(\./data/raw/FHVTripData2020.RDS\)
-fhv3_21 &lt;- readRDS(\./data/raw/FHVTripData2020.RDS\)
-</code></pre>
-<pre><code>
-&lt;!-- rnb-source-end --&gt;
-
-&lt;!-- rnb-chunk-end --&gt;
-
-
-&lt;!-- rnb-text-begin --&gt;
-
-
-
-&lt;!-- rnb-text-end --&gt;
-
-
-&lt;!-- rnb-chunk-begin --&gt;
-
-
-&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuaGVhZChmaHYxXzE5KVxuYGBgXG5gYGAifQ== --&gt;
-
-```r
-```r
 head(fhv1_19)</code></pre>
 <pre><code>
 &lt;!-- rnb-source-end --&gt;
@@ -546,7 +524,7 @@ plot(nyC_map, col=\#f2f2f2\, bg=\black\, lwd=0.25 )</code></pre>
 <!-- rnb-chunk-end -->
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIk5ldyBZb3JrIENpdHkgQVFJIERhdGEgRXhwbG9yYXRpb24iDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQojIyMgRW52aXJvbm1lbnQgU2V0dXANCg0KYGBge3Igd2FybmluZz1GQUxTRX0NCiMgTG9hZCBMaWJyYXJpZXMNCmxpYnJhcnkoUlNvY3JhdGEpDQpsaWJyYXJ5KGFxc3IpDQpsaWJyYXJ5KHVzZXRoaXMpDQpsaWJyYXJ5KGRldnRvb2xzKQ0KbGlicmFyeShkYXRhLnRhYmxlKQ0KbGlicmFyeSh0aWR5dmVyc2UpDQpsaWJyYXJ5KERhdGFFeHBsb3JlcikNCmxpYnJhcnkoZmlsZW5hbWVyKQ0KbGlicmFyeSh2YWxpZGF0ZSkNCmxpYnJhcnkocmVxdWVzdCkNCmBgYA0KDQojIyBEYXRhc2V0IFVSTHMNCg0KV2UgaGF2ZSBjb21waWxlZCBhIGxpc3Qgb2YgZGF0YSBzZXRzIHdlJ2QgbGlrZSB0byBleHBsb3JlIGZvciB0aGlzIGFuYWx5c2lzLiBFYWNoIFVSTCBjb250YWlucyBhIHF1ZXJ5IHRvIGZpbHRlciBkb3duIHRoZSByZWNvcmRzIGJldHdlZW4gSmFuIDEgMjAxOCBhbmQgSmFuIDEgMjAyMiwgYW5kIGluIE1hbmhhdHRhbiBib3JvdWdoIG9yIE5ldyBZb3JrIGNvdW50eSwgb3IgTmV3IFlvcmsgQ2l0eS4NCg0KYGBge3J9DQpzb3VyY2UoIi4vYXBpL255Y19kYXRhc2V0X3VybHMuUiIpDQpkYXRhc2V0IDwtIHJlYWRSRFMoIi4vYXBpL3Byb2Nlc3NlZC9ueWNfZGF0YXNldF91cmxzLmNzdiIpDQpgYGANCg0KIyMgRG93bmxvYWQgRGF0YSBGcm9tIFVSTHMNCg0KRG93bmxvYWQgdGhlIFVSTHMgb250byBkaXNrLCB0byBhdm9pZCBzdG9yaW5nIGluIFIgbWVtb3J5LiBUYXhpIHJlY29yZHMgYXJlID4xMDArIG1pbGxpb24sIHNvIGRvd25sb2FkaW5nIG9uIGRpc2sgd291bGQgYmUgZmFzdGVyLiBZb3UgY2FuIHNlZSBzdGF0dXMgb2YgZG93bmxvYWQgaW4gcHJpbnQgY29tbWVudHMuDQoNCmBgYHtyIHdhcm5pbmc9RkFMU0V9DQpzb3VyY2UoIi4vYXBpL255Y19kYXRhc2V0X2Rvd25sb2Fkcy5SIikNCmRhdGFzZXRfbGlzdCA8LSByZWFkUkRTKCIuL2FwaS9wcm9jZXNzZWQvbnljX2RhdGFzZXRfbGlzdC5jc3YiKQ0KYGBgDQoNCiMgRXhwbG9yYXRvcnkgRGF0YSBBbmFseXNpcw0KDQpgYGB7cn0NCmZodjFfMTggPC0gcmVhZFJEUygiLi9kYXRhL3Jhdy90YXhpL0ZIVlRyaXBEYXRhMjAxOC5SRFMiKQ0KZmh2MV8xOSA8LSByZWFkX2ZpbGUoIi4vZGF0YS9yYXcvdGF4aS9GSFZUcmlwRGF0YTIwMTkuUkRTIikNCmZodjFfMjAgPC0gcmVhZFJEUygiLi9kYXRhL3Jhdy90YXhpL0ZIVlRyaXBEYXRhMjAyMC5SRFMiKQ0KZmh2MV8yMSA8LSByZWFkUkRTKCIuL2RhdGEvcmF3L3RheGkvRkhWVHJpcERhdGEyMDIwLlJEUyIpDQoNCmZodjJfMTkgPC0gcmVhZFJEUygiLi9kYXRhL3Jhdy90YXhpMi9GSFZUcmlwRGF0YTIwMTkuUkRTIikNCmZodjJfMjAgPC0gcmVhZFJEUygiLi9kYXRhL3Jhdy90YXhpMi9GSFZUcmlwRGF0YTIwMjAuUkRTIikNCmZodjJfMjEgPC0gcmVhZFJEUygiLi9kYXRhL3Jhdy90YXhpMi9GSFZUcmlwRGF0YTIwMjAuUkRTIikNCg0KZmh2M18xOSA8LSByZWFkUkRTKCIuL2RhdGEvcmF3L0ZIVlRyaXBEYXRhMjAxOS5SRFMiKQ0KZmh2M18yMCA8LSByZWFkUkRTKCIuL2RhdGEvcmF3L0ZIVlRyaXBEYXRhMjAyMC5SRFMiKQ0KZmh2M18yMSA8LSByZWFkUkRTKCIuL2RhdGEvcmF3L0ZIVlRyaXBEYXRhMjAyMC5SRFMiKQ0KDQpgYGANCg0KYGBge3J9DQpoZWFkKGZodjFfMTkpDQpgYGANCg0KYGBge3J9DQpoZWFkKGRhdGEpDQpjcmVhdGVfcmVwb3J0KGRhdGEpDQpgYGANCg0KYGBge3J9DQpmZWF0dXJlcyA8LSBwcm9maWxlX21pc3NpbmcoZGF0YSkgJT4lIGZpbHRlcihwY3RfbWlzc2luZyA8IDAuMzUpDQpmZWF0dXJlcyRmZWF0dXJlDQpgYGANCg0KYGBge3J9DQpzdHJlZXRDb25zdHJ1Y3Rpb25QZXJtaXRzIDwtIGRhdGFbZmVhdHVyZXMkZmVhdHVyZV0NCmBgYA0KDQojIyMgQVFJIERhdGENCmBgYHtyfQ0KYXFpX3BvbGx1dGFudHMgPC0gYXFzX2xpc3RfcGFyYW1ldGVycyhhcXNfdXNlciwgcGM9IkFRSSBQT0xMVVRBTlRTIikNCmFxaV9mb3JlY2FzdCA8LSBhcXNfbGlzdF9wYXJhbWV0ZXJzKGFxc191c2VyLCBwYz0iRk9SRUNBU1QiKQ0KYGBgDQoNCmBgYHtyfQ0KczIgPC0gYXFzX2RhaWx5RGF0YShhcXNfdXNlcj1hcXNfdXNlciwNCiAgICAgICAgICAgICAgICAgICAgIGVuZHBvaW50PSJieUNvdW50eSIsDQogICAgICAgICAgICAgICAgICAgICBzdGF0ZT1ueV9maXBzX2NvZGUsDQogICAgICAgICAgICAgICAgICAgICBjb3VudHk9bnlDb3VudHlfZmlwc19jb2RlLA0KICAgICAgICAgICAgICAgICAgICAgYmRhdGU9IjIwMTYwMTAxIiwNCiAgICAgICAgICAgICAgICAgICAgIGVkYXRlPSIyMDE2MTIzMSIsDQogICAgICAgICAgICAgICAgICAgICBwYXJhbT1hcWlfcG9sbHV0YW50cyRjb2RlWzFdKQ0KYGBgDQoNCiMjIyBSb2FkIE5ldHdvcmtzIA0KYGBge3J9DQojIFJlYWQgdGhpcyBzaGFwZSBmaWxlIHdpdGggdGhlIHJnZGFsIGxpYnJhcnkuIA0KbGlicmFyeShyZ2RhbCkNCg0KbXlfc3BkZiA8LSByZWFkT0dSKCANCiAgZHNuPSBwYXN0ZTAoZ2V0d2QoKSwgIi9kYXRhL2NpdHltYXBfY2l0eW1hcF92MSIpICwgDQogIGxheWVyPSJjaXR5bWFwX2NpdHltYXBfdjEiLA0KICB2ZXJib3NlPUZBTFNFKQ0KYGBgDQoNCmBgYHtyfQ0KIyBCYXNpYyBwbG90IG9mIHRoaXMgc2hhcGUgZmlsZToNCnBhcihtYXI9YygwLDAsMCwwKSkNCnBsb3QobXlfc3BkZiwgY29sPSIjZjJmMmYyIiwgYmc9ImJsYWNrIiwgbHdkPTAuMjUgKQ0KYGBgDQoNCmBgYHtyfQ0KaGVhZChteV9zcGRmKQ0KYGBgDQoNCmBgYHtyfQ0KbnlDX21hcCA8LSBteV9zcGRmW215X3NwZGYkYm9yb19ubSA9PSBCT1JPVUdIXQ0KDQppc18obXlfc3BkZiRib3JvX25tID09IEJPUk9VR0ggKQ0KDQpzdHIobXlfc3BkZikNCg0KbmFtZXMobXlfc3BkZikNCg0KdW5pcXVlKG15X3NwZGYkb3duZXJzaGlwXykNCg0KbXlfc3BkZg0KYGBgDQoNCg0KYGBge3J9DQojIEJhc2ljIHBsb3Qgb2YgdGhpcyBzaGFwZSBmaWxlOg0KcGFyKG1hcj1jKDAsMCwwLDApKQ0KcGxvdChueUNfbWFwLCBjb2w9IiNmMmYyZjIiLCBiZz0iYmxhY2siLCBsd2Q9MC4yNSApDQpgYGANCg==</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIk5ldyBZb3JrIENpdHkgQVFJIERhdGEgRXhwbG9yYXRpb24iDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQojIyMgRW52aXJvbm1lbnQgU2V0dXANCg0KYGBge3Igd2FybmluZz1GQUxTRX0NCiMgTG9hZCBMaWJyYXJpZXMNCmxpYnJhcnkoUlNvY3JhdGEpDQpsaWJyYXJ5KGFxc3IpDQpsaWJyYXJ5KHVzZXRoaXMpDQpsaWJyYXJ5KGRldnRvb2xzKQ0KbGlicmFyeShkYXRhLnRhYmxlKQ0KbGlicmFyeSh0aWR5dmVyc2UpDQpsaWJyYXJ5KERhdGFFeHBsb3JlcikNCmxpYnJhcnkoZmlsZW5hbWVyKQ0KbGlicmFyeSh2YWxpZGF0ZSkNCmxpYnJhcnkocmVxdWVzdCkNCmxpYnJhcnkoZG93bmxvYWRlcikNCmBgYA0KDQojIyBEYXRhc2V0IFVSTHMNCg0KV2UgaGF2ZSBjb21waWxlZCBhIGxpc3Qgb2YgZGF0YSBzZXRzIHdlJ2QgbGlrZSB0byBleHBsb3JlIGZvciB0aGlzIGFuYWx5c2lzLiBFYWNoIFVSTCBjb250YWlucyBhIHF1ZXJ5IHRvIGZpbHRlciBkb3duIHRoZSByZWNvcmRzIGJldHdlZW4gSmFuIDEgMjAxOCBhbmQgSmFuIDEgMjAyMiwgYW5kIGluIE1hbmhhdHRhbiBib3JvdWdoIG9yIE5ldyBZb3JrIGNvdW50eSwgb3IgTmV3IFlvcmsgQ2l0eS4NCg0KYGBge3J9DQpzb3VyY2UoIi4vYXBpL255Y19kYXRhc2V0X3VybHMuUiIpDQpgYGANCg0KIyMgRG93bmxvYWQgRGF0YSBGcm9tIFVSTHMNCg0KRG93bmxvYWQgdGhlIFVSTHMgb250byBkaXNrLCB0byBhdm9pZCBzdG9yaW5nIGluIFIgbWVtb3J5LiBUYXhpIHJlY29yZHMgYXJlID4xMDArIG1pbGxpb24sIHNvIGRvd25sb2FkaW5nIG9uIGRpc2sgd291bGQgYmUgZmFzdGVyLiBZb3UgY2FuIHNlZSBzdGF0dXMgb2YgZG93bmxvYWQgaW4gcHJpbnQgY29tbWVudHMuDQoNCmBgYHtyIHdhcm5pbmc9RkFMU0V9DQojc291cmNlKCIuL2FwaS9ueWNfZGF0YXNldF9kb3dubG9hZHMuUiIpDQpkYXRhc2V0IDwtIHJlYWRSRFMoIi4vYXBpL3Byb2Nlc3NlZC9ueWNfZGF0YXNldF9saXN0LmNzdiIpDQpgYGANCg0KIyBFeHBsb3JhdG9yeSBEYXRhIEFuYWx5c2lzDQoNCmBgYHtyfQ0KIyBzdG9yZSBkYXRhDQpkYXRhc2V0JGxvYw0KDQpmb3IgKGkgaW4gMTpucm93KGRhdGFzZXQpKXsNCiAgbmFtZSA8LSBkYXRhc2V0W2ksXSRmZWF0dXJlX25hbWUNCiAgcmVhZFJEUyhuYW1lLCBkYXRhc2V0W2ksXSRsb2MpDQogIA0KICBwcmludCgiRGF0YXNldCBzYXZlZCBzdWNjZXNzZnVsbHkhIikNCn0NCmBgYA0KDQpgYGB7cn0NCmhlYWQoZmh2MV8xOSkNCmBgYA0KDQpgYGB7cn0NCmhlYWQoZGF0YSkNCmNyZWF0ZV9yZXBvcnQoZGF0YSkNCmBgYA0KDQpgYGB7cn0NCmZlYXR1cmVzIDwtIHByb2ZpbGVfbWlzc2luZyhkYXRhKSAlPiUgZmlsdGVyKHBjdF9taXNzaW5nIDwgMC4zNSkNCmZlYXR1cmVzJGZlYXR1cmUNCmBgYA0KDQpgYGB7cn0NCnN0cmVldENvbnN0cnVjdGlvblBlcm1pdHMgPC0gZGF0YVtmZWF0dXJlcyRmZWF0dXJlXQ0KYGBgDQoNCiMjIyBBUUkgRGF0YQ0KYGBge3J9DQphcWlfcG9sbHV0YW50cyA8LSBhcXNfbGlzdF9wYXJhbWV0ZXJzKGFxc191c2VyLCBwYz0iQVFJIFBPTExVVEFOVFMiKQ0KYXFpX2ZvcmVjYXN0IDwtIGFxc19saXN0X3BhcmFtZXRlcnMoYXFzX3VzZXIsIHBjPSJGT1JFQ0FTVCIpDQpgYGANCg0KYGBge3J9DQpzMiA8LSBhcXNfZGFpbHlEYXRhKGFxc191c2VyPWFxc191c2VyLA0KICAgICAgICAgICAgICAgICAgICAgZW5kcG9pbnQ9ImJ5Q291bnR5IiwNCiAgICAgICAgICAgICAgICAgICAgIHN0YXRlPW55X2ZpcHNfY29kZSwNCiAgICAgICAgICAgICAgICAgICAgIGNvdW50eT1ueUNvdW50eV9maXBzX2NvZGUsDQogICAgICAgICAgICAgICAgICAgICBiZGF0ZT0iMjAxNjAxMDEiLA0KICAgICAgICAgICAgICAgICAgICAgZWRhdGU9IjIwMTYxMjMxIiwNCiAgICAgICAgICAgICAgICAgICAgIHBhcmFtPWFxaV9wb2xsdXRhbnRzJGNvZGVbMV0pDQpgYGANCg0KIyMjIFJvYWQgTmV0d29ya3MgDQpgYGB7cn0NCiMgUmVhZCB0aGlzIHNoYXBlIGZpbGUgd2l0aCB0aGUgcmdkYWwgbGlicmFyeS4gDQpsaWJyYXJ5KHJnZGFsKQ0KDQpteV9zcGRmIDwtIHJlYWRPR1IoIA0KICBkc249IHBhc3RlMChnZXR3ZCgpLCAiL2RhdGEvY2l0eW1hcF9jaXR5bWFwX3YxIikgLCANCiAgbGF5ZXI9ImNpdHltYXBfY2l0eW1hcF92MSIsDQogIHZlcmJvc2U9RkFMU0UpDQpgYGANCg0KYGBge3J9DQojIEJhc2ljIHBsb3Qgb2YgdGhpcyBzaGFwZSBmaWxlOg0KcGFyKG1hcj1jKDAsMCwwLDApKQ0KcGxvdChteV9zcGRmLCBjb2w9IiNmMmYyZjIiLCBiZz0iYmxhY2siLCBsd2Q9MC4yNSApDQpgYGANCg0KYGBge3J9DQpoZWFkKG15X3NwZGYpDQpgYGANCg0KYGBge3J9DQpueUNfbWFwIDwtIG15X3NwZGZbbXlfc3BkZiRib3JvX25tID09IEJPUk9VR0hdDQoNCmlzXyhteV9zcGRmJGJvcm9fbm0gPT0gQk9ST1VHSCApDQoNCnN0cihteV9zcGRmKQ0KDQpuYW1lcyhteV9zcGRmKQ0KDQp1bmlxdWUobXlfc3BkZiRvd25lcnNoaXBfKQ0KDQpteV9zcGRmDQpgYGANCg0KDQpgYGB7cn0NCiMgQmFzaWMgcGxvdCBvZiB0aGlzIHNoYXBlIGZpbGU6DQpwYXIobWFyPWMoMCwwLDAsMCkpDQpwbG90KG55Q19tYXAsIGNvbD0iI2YyZjJmMiIsIGJnPSJibGFjayIsIGx3ZD0wLjI1ICkNCmBgYA0K</div>
 
 
 
