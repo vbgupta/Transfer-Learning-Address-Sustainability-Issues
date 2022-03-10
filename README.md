@@ -1,5 +1,23 @@
 # DS440-Transfer-Learning-Address-Sustainability-Issues
-PSU DS440 Capstone Project Repository
+
+### Datasets
+
+*Overview*
+* **Database**: Master datasets are injected into Azure SQL database named *sustainability*.
+* **Observations**: Each record is an aggregated weekly value *v* of feature *x* observed in week *w* of year *y* at latitude *lat* and longitude *long* of county *c*. 
+* **Response Variable**: Target variable, *AQI* is weekly Air Quality Index (AQI). 
+* **Spatial**: For NYC, we have selected Manhattan / New York county for collecting datasets. 
+* **Temporal**: All datasets are between Jan 1, 2018 and Jan 1, 2022, aggregated at a minimum granularity of *weekly*.
+
+*Number of Records*
+* Number of records per feature for 4 years = 52 weeks * 4 years = 208 records
+* Each dataset has *n1* features *x* with *n2* number of subfeatures *s*, so total records we expect in our dataset = 208 * n1 * n2
+* We are still considering predicting particulate matter and air quality index together as (PM2.5, AQI), and the AQI range bands. 
+
+*Scale by US Environmental Protection Agency (EPA)*
+
+![image](https://user-images.githubusercontent.com/49132244/157559174-ec5cb151-64b4-47c5-b325-421464a5a958.png)
+
 ### Tools For Database Management
 **Install Git Large File Storage (LFS)**
 
