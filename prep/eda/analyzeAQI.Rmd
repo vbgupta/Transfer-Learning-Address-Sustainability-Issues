@@ -20,53 +20,110 @@ library(request)
 library(downloader)
 ```
 
-## Dataset URLs
+### Dataset URLs
 
 We have compiled a list of data sets we'd like to explore for this analysis. Each URL contains a query to filter down the records between Jan 1 2018 and Jan 1 2022, and in Manhattan borough or New York county, or New York City.
 
 ```{r}
-source("./api/nyc_dataset_urls.R")
+#source("./api/nyc_dataset_urls.R")
 ```
 
-## Download Data From URLs
+### Download Data From URLs
 
 Download the URLs onto disk, to avoid storing in R memory. Taxi records are >100+ million, so downloading on disk would be faster. You can see status of download in print comments.
 
 ```{r warning=FALSE}
 #source("./api/nyc_dataset_downloads.R")
-dataset <- readRDS("./api/processed/nyc_dataset_list.csv")
+df_list <- readRDS("./api/processed/nyc_dataset_list.csv")
 ```
 
-# Exploratory Data Analysis
+### Exploratory Data Analysis
 
 ```{r}
-# store data
-dataset$loc
+# Cleaning functions
+medianNA <- function(x){ifelse(is.na(x),
+                     median(x, na.rm = TRUE), x)}
 
-for (i in 1:nrow(dataset)){
-  name <- dataset[i,]$feature_name
-  readRDS(name, dataset[i,]$loc)
-  
-  print("Dataset saved successfully!")
-}
+meanNA <- function(x){ifelse(is.na(x),
+                     mean(x, na.rm = TRUE), x)}
 ```
+
+In the following script, we do the following:
+
+1. Read downloaded data from JSON into tibble of features stored as tibbles.
+2. Create EDA report for each feature tibble using `DataExplorer`.
+3. Save EDA reports and tibble of features.
 
 ```{r}
-head(fhv1_19)
+#source("./eda/reportdata.R")
+features <- readRDS("./data/processed/features.RDS")
+tb_features <- tibble(fts = features$df$list[1:nrow(features)])
 ```
 
+Let's retrieve our constants for the analysis.
+
 ```{r}
-head(data)
-create_report(data)
+constants <- readRDS("./api/processed/nyc_constants.csv")
 ```
+
+**Weather Data**
+
+Cleaning weather data to remove empty columns, and add week #, month, year to dataset.
+
+```{r}
+weather <- fread("./data/raw/weather_2018_2022.csv",
+                 data.table = TRUE, drop = c("source"))
+
+# Drop all NA columns
+weather <- weather %>% discard(~all(is.na(.)))
+
+# Split datetime to retrieve week, month, year
+weather$week <- week(weather$datetime)
+weather <- separate(weather, "datetime", c("Year", "Month", "Day"), sep = "-")
+
+# Run EDA
+#create_report(weather, output_file = "weather_eda.html", output_dir = "./eda/reports/")
+```
+
+
+**Air Quality Data**
+
+```{r}
+pm25 <- fread("./data/raw/new-york, usa-air-quality.csv",
+                 data.table = TRUE)
+
+# Drop columns with more than 30% total NA values
+cols <- profile_missing(pm25) %>% filter(pct_missing > 0.30)
+pm25[, as.character(cols$feature) := NULL]
+
+# Split datetime to retrieve week, month, year
+pm25[, week := week(date)]
+pm25 <- separate(pm25, "date", c("year", "month", "day"),
+                 sep = "/") 
+# Fix data types 
+pm25[,lapply(.SD, as.integer),.SDcols = c("year", "month", "day")]
+pm25[,pm25 := as.numeric(pm25)]
+
+# Select rows by temporal var
+pm25 <- pm25[year %between% list(year(constants$TIME_START), year(constants$TIME_END))]
+
+pm25 <- pm25[, lapply(.SD, medianNA), .SDcols = c("pm25"), by = .(week, month, year)]
+
+pm25 <- pm25 %>% group_by(week, month, year) %>% summarise(avg_pm25 = mean(pm25), n = n())
+
+View(pm25)
+
+# Run EDA
+# create_report(avgpm25, output_file = "avgpm25_eda.html", output_dir = "./eda/reports/") %>% try(TRUE)
+
+#pm25 <- pm25[,by = .(week, Month, Year)]
+```
+
+
 
 ```{r}
 features <- profile_missing(data) %>% filter(pct_missing < 0.35)
 features$feature
-```
-
-```{r}
-streetConstructionPermits <- data[features$feature]
 ```
 
 ### AQI Data
