@@ -79,10 +79,28 @@ weather <- weather %>% discard(~all(is.na(.)))
 
 # Split datetime to retrieve week, month, year
 weather$week <- week(weather$datetime)
-weather <- separate(weather, "datetime", c("Year", "Month", "Day"), sep = "-")
+weather <- separate(weather, "datetime", c("year", "month", "day"), sep = "-")
 
-# Run EDA
-#create_report(weather, output_file = "weather_eda.html", output_dir = "./eda/reports/")
+# Store columns
+str_cols <- c("name", "description", "conditions", "latitude", "longitude",
+              "day")
+store_str <- weather[, .(name, description, conditions, latitude, longitude, day)]
+
+numeric_cols <- setdiff(names(weather), str_cols)
+
+# Extract stations identified by week, year
+#stations <- weather[, .(week, year, stations)]
+
+# Fix data types and drop irrelevant columns
+weather <- weather[, lapply(.SD, as.numeric), .SDcols = numeric_cols]
+weather[, uvindex := NULL]
+
+# Aggregate weather by week
+weather %>% group_by(year, week, stations) %>% summarise(n = n())
+
+weather[,nrow := nrow(week), keyby = .(year, week, stations)]
+
+unique(weather)
 ```
 
 
@@ -109,17 +127,19 @@ pm25 <- pm25[year %between% list(year(constants$TIME_START), year(constants$TIME
 
 pm25 <- pm25[, lapply(.SD, medianNA), .SDcols = c("pm25"), by = .(week, month, year)]
 
-pm25 <- pm25 %>% group_by(week, month, year) %>% summarise(avg_pm25 = mean(pm25), n = n())
+pm25 <- pm25 %>% group_by(week, month, year) %>% 
+              summarise(avg_pm25 = mean(pm25), n = n())
 
-View(pm25)
-
-# Run EDA
-# create_report(avgpm25, output_file = "avgpm25_eda.html", output_dir = "./eda/reports/") %>% try(TRUE)
-
-#pm25 <- pm25[,by = .(week, Month, Year)]
+fwrite(pm25, "./data/processed/pm25.RDS", col.names = TRUE)
+#fwrite(weather, "./data/processed/weather.RDS", col.names = TRUE)
 ```
 
+Combine *weather* and *PM2.5* datasets.
 
+```{r}
+nrow(pm25)
+nrow(weather)
+```
 
 ```{r}
 features <- profile_missing(data) %>% filter(pct_missing < 0.35)
