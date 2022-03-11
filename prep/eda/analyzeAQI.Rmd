@@ -5,19 +5,14 @@ output: html_notebook
 
 ### Environment Setup
 
-```{r warning=FALSE}
+```{r output=FALSE}
 # Load Libraries
-library(RSocrata)
-library(aqsr)
-library(usethis)
-library(devtools)
+# library(usethis)
+# library(devtools)
 library(data.table)
 library(tidyverse)
 library(DataExplorer)
-library(filenamer)
-library(validate)
-library(request)
-library(downloader)
+# library(filenamer)
 ```
 
 ### Dataset URLs
@@ -75,7 +70,7 @@ weather <- fread("./data/raw/weather_2018_2022.csv",
                  data.table = TRUE, drop = c("source"))
 ```
 
-```{r}
+```{r warning=FALSE}
 # Split datetime into week, month, year
 weather$week <- week(weather$datetime)
 weather <- separate(weather, "datetime", c("year", "month", "day"), sep = "-")
@@ -148,19 +143,19 @@ weather$secondarycondition <- weather$secondarycondition %>%
 
 ```{r}
 # Get weekly weather data
-use_weather <- weather[,lapply(.SD, mean), 
+weather <- weather[,lapply(.SD, mean), 
                    .SDcols = setdiff(use,c("year", "week",
                                            "primarycondition",
                                            "secondarycondition")), 
                    by = .(year, week)]
 
-fwrite(use_weather, "./data/processed/weather.csv")
+fwrite(weather, "./data/processed/weather.csv")
 ```
 
 
 **Air Quality Data**
 
-```{r}
+```{r output = FALSE}
 pm25 <- fread("./data/raw/new-york, usa-air-quality.csv",
                  data.table = TRUE)
 
@@ -173,7 +168,7 @@ pm25[, week := week(date)]
 pm25 <- separate(pm25, "date", c("year", "month", "day"),
                  sep = "/") 
 # Fix data types 
-pm25[,lapply(.SD, as.integer),.SDcols = c("year", "month", "day")]
+pm25[, `:=` (year = as.integer(year), month = as.integer(month), day = as.integer(day))]
 pm25[,pm25 := as.numeric(pm25)]
 
 # Select rows by temporal var
@@ -181,32 +176,201 @@ pm25 <- pm25[year %between% list(year(constants$TIME_START),
                                  year(constants$TIME_END) - 1)]
 
 # Fill NA with median
-pm25 <- pm25[, lapply(.SD, medianNA), .SDcols = c("pm25"), by = .(week, year)]
+pm25 <- pm25[, lapply(.SD, medianNA), .SDcols = c("pm25"), by = .(year,month,week)]
+
+# Extract week, month, year for temporal
+temporal <- pm25 %>% group_by(year,month, week) %>% 
+              summarise(n = n()) %>% data.table()
+
+fwrite(temporal, "./data/processed/temporal.csv", col.names = TRUE)
 
 # Get weekly pm25 data
-pm25 <- pm25 %>% group_by(week, year) %>% 
-              summarise(avg_pm25 = mean(pm25), n = n()) %>% data.table()
+pm25 <- pm25 %>% group_by(year,week) %>% 
+              summarise(pm25 = mean(pm25)) %>% data.table()
 
-fwrite(pm25, "./data/processed/pm25.RDS", col.names = TRUE)
+fwrite(pm25, "./data/processed/pm25.csv", col.names = TRUE)
+```
+
+### Debugging
+Problem : Same week repeating for different months, because week is parsed from datetime. 
+What I want: Map week to months to merge monthly data with weekly data. 
+
+```{r}
+# save temporal
+temporal <- fread("./data/processed/temporal.csv")
+```
+We need around 212 - 243 rows in the merged dataset.
+
+```{r}
+taxi_monthly <- fread("./data/raw/taxi/data_reports_monthly.csv", data.table = TRUE)
+
+# Split datetime to retrieve week, month, year
+taxi_monthly <- separate(taxi_monthly, "Month/Year", c("year", "month"), sep = "-") 
+
+# Fix data types 
+taxi_monthly[, `:=`(year = as.integer(year), month = 
+as.integer(month))]
+
+# Select rows by temporal var
+taxi_monthly <- taxi_monthly[year %between% list(year(constants$TIME_START),year(constants$TIME_END) - 1)]
+
+# Sort temporal and taxi_monthly BOTH by (year, month)
+taxi_monthly <- taxi_monthly %>% group_by(month, year) %>% arrange(year, month)
+
+# Merge datasets to get (54 * 4 * 6) rows + (54*3) repeating rows
+merge <- merge(taxi_monthly, temporal, sort = FALSE) %>% data.table()# 1458 rows
+
+# remove month and n
+merge <- merge[, c("month", "n") := NULL]
+
+taxi_weekly <- merge
+
+# Remove NA and irrelevant columns
+taxi_weekly[taxi_weekly == '-'] <- NA
+
+cols <- profile_missing(taxi_weekly) %>% filter(pct_missing < 0.30)
+
+taxi_weekly <- taxi_weekly %>% select(cols$feature) %>% tibble() %>% relocate(week, .after = year)
+taxi_weekly <- data.table(taxi_weekly)
+
+
+
+# Fix Data Types
+# taxi_weekly[, `:=`("`Trips Per Day`" = as.integer("`Trips Per Day`"))]
+# 
+#           "Unique Drivers"= as.integer("Unique Drivers"),
+#            "Unique Vehicles" = as.integer("Unique Vehicles"),
+#           "Vehicles Per Day" = as.integer("Vehicles Per Day"),
+#           "Avg Minutes Per Trip" = as.numeric("Avg Minutes Per Trip"))]
+
+names(taxi_weekly)
+str(taxi_weekly)
+gsub(c(" ", ","),"", noquote(taxi_weekly$`Trips Per Day`))
+
+# Rearrange columns for easy joins
+
+t <- taxi_weekly %>% arrange(year, week) %>% group_by(year, week, `License Class`) %>% data.table()
+
+t
+
+#t[, lapply(.SD, mean), by = .(year, week, `License Class`)]
+```
+
+```{r}
+# Set unique keys
+setkey(temporal, week, month, year)
+setkey(taxi_monthly, month, year)
+
+# Arrange datasets
+
+uniqueN(temporal)
+
+temporal
+
+pm25 %>% arrange(year, week)
+temporal %>% arrange(year, week)
+cbind(temporal$week, pm25$week)
 ```
 
 Combine *weather* and *PM2.5* datasets.
 
 ```{r}
-names(pm25)
-nrow(use_weather)
-setkey(pm25, .(year, week))
+weather <- fread("./data/processed/weather.csv")
+pm25 <- fread("./data/processed/pm25.csv")
 
-# 
-# names(pm25)
-# names(use_weather)
-# pm25[use_weather, on = .(week, year)]
+setkey(pm25, year, week)
+setkey(weather, year, week)
+
+master <- weather[pm25]
+
+
 ```
+
 
 ```{r}
-features <- profile_missing(data) %>% filter(pct_missing < 0.35)
-features$feature
+# # Read data
+fts6 <- data.frame(tb_features$fts[6][1])
+fts6$ftrName <- features$names[6]
+
+# for (i in 1:nrow(features)) {
+#   
+#   fts6 <- data.frame(tb_features$fts[i][1])
+#   fts6$feature_name <- features$names[i]
+#   
+# }
+
+
+
+features$names
+
+# Drop columns with more than 30% total NA values
+cols <- profile_missing(fts2) %>% filter(pct_missing < 0.30)
+fts2 <- fts2[, cols$feature] %>% data.table()
+
+names(fts2)
+# Split datetime to retrieve week, month, year
+fts2[, week := week(occured_on)]
+fts2 <- separate(fts2, "occured_on", c("year", "month", "day"),
+                 sep = "-")
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+# # Read data
+# fts2 <- data.frame(tb_features$fts[2][1])
+# fts2$ftrName <- features$names[2]
+# 
+# # Drop columns with more than 30% total NA values
+# cols <- profile_missing(fts2) %>% filter(pct_missing < 0.30)
+# fts2 <- fts2[, cols$feature] %>% data.table()
+# 
+# names(fts2)
+# # Split datetime to retrieve week, month, year
+# fts2[, week := week(occured_on)]
+# fts2 <- separate(fts2, "occured_on", c("year", "month", "day"),
+#                  sep = "-") 
+# keep <- setdiff(names(fts2), c("day", "bus_no", "bus_company_name",  
+#                                "month", "incident_number", "created_on",
+#                                "informed_on",
+#                                "school_age_or_prek","last_updated_on", "boro"))
+# fts2 <- fts2 %>% select(keep)
+# 
+# fts2[,lapply(.SD,uniqueN)]
+```
+
+
+
+
+
+
+
+
+
+
 
 ### AQI Data
 ```{r}
