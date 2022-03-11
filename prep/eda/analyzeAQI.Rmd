@@ -73,34 +73,88 @@ Cleaning weather data to remove empty columns, and add week #, month, year to da
 ```{r}
 weather <- fread("./data/raw/weather_2018_2022.csv",
                  data.table = TRUE, drop = c("source"))
+```
 
-# Drop all NA columns
-weather <- weather %>% discard(~all(is.na(.)))
-
-# Split datetime to retrieve week, month, year
+```{r}
+# Split datetime into week, month, year
 weather$week <- week(weather$datetime)
 weather <- separate(weather, "datetime", c("year", "month", "day"), sep = "-")
 
-# Store columns
-str_cols <- c("name", "description", "conditions", "latitude", "longitude",
-              "day")
-store_str <- weather[, .(name, description, conditions, latitude, longitude, day)]
+# Split datetime into primary and secondary conditions
+weather <- separate(weather, "conditions", 
+                    c("primarycondition", 
+                      "secondarycondition"), 
+                    sep = ", ")
+# Fill NAs for new columns
+weather[is.na(secondarycondition), ]$secondarycondition <- "None"
+```
 
-numeric_cols <- setdiff(names(weather), str_cols)
+```{r}
+# Select rows by temporal var
+weather <- weather[year < year(constants$TIME_END)]
 
-# Extract stations identified by week, year
-#stations <- weather[, .(week, year, stations)]
+# Fix data types
+weather[, `:=`(year = as.integer(year), 
+               month = as.integer(month), 
+               week = as.integer(week))]
 
-# Fix data types and drop irrelevant columns
-weather <- weather[, lapply(.SD, as.numeric), .SDcols = numeric_cols]
+# Drop all NA and irrelevant columns 
+weather <- weather %>% discard(~all(is.na(.))) 
+weather[, day := NULL]
 weather[, uvindex := NULL]
 
-# Aggregate weather by week
-weather %>% group_by(year, week, stations) %>% summarise(n = n())
+# Select useful numeric data
+store <- weather[,.(year, week, name, latitude, longitude, description, stations)]
 
-weather[,nrow := nrow(week), keyby = .(year, week, stations)]
+use <- setdiff(names(weather), c("name", "latitude",
+                                 "longitude", "description",
+                                 "stations", "month"))
+weather <- weather %>% select(use)
 
-unique(weather)
+# Fill NAs with median of (week, year)
+weather <- weather[, lapply(.SD, medianNA), 
+                   .SDcols = setdiff(use,c("year", "week")), 
+                   by = .(year, week)]
+
+# Missing data : windgust
+profile_missing(weather) %>% filter(pct_missing > 0)
+
+# Fill NA of missing (week, year) with median of (week-1, year)
+weather[is.na(windgust),]$windgust <- weather[year == weather[is.na(windgust),]$year[1]][week == weather[is.na(windgust),]$week[1] - 1][, windgust] %>% median()
+```
+```{r}
+weather[,`:=`(primarycondition = as.factor(primarycondition), secondarycondition = as.factor(secondarycondition))]
+
+weather_factors <- stack(data.frame("Clear" = 1, 
+                                    "Partially cloudy" = 2,"Overcast" = 3,
+                                    "Rain" = 4, "Snow" = 5, "None" = 0))
+
+saveRDS(weather_factors, "./data/processed/weather_factors.csv")
+
+weather$primarycondition <- weather$primarycondition %>% 
+                              recode_factor("Clear" = 1, 
+                                            "Partially cloudy" = 2,
+                                            "Overcast" = 3, 
+                                            "Rain" = 4, "Snow" = 5, 
+                                            "None" = 0)
+
+weather$secondarycondition <- weather$secondarycondition %>% 
+                              recode_factor("Clear" = 1, 
+                                            "Partially cloudy" = 2,
+                                            "Overcast" = 3, 
+                                            "Rain" = 4, "Snow" = 5, 
+                                            "None" = 0)
+```
+
+```{r}
+# Get weekly weather data
+use_weather <- weather[,lapply(.SD, mean), 
+                   .SDcols = setdiff(use,c("year", "week",
+                                           "primarycondition",
+                                           "secondarycondition")), 
+                   by = .(year, week)]
+
+fwrite(use_weather, "./data/processed/weather.csv")
 ```
 
 
@@ -123,22 +177,30 @@ pm25[,lapply(.SD, as.integer),.SDcols = c("year", "month", "day")]
 pm25[,pm25 := as.numeric(pm25)]
 
 # Select rows by temporal var
-pm25 <- pm25[year %between% list(year(constants$TIME_START), year(constants$TIME_END))]
+pm25 <- pm25[year %between% list(year(constants$TIME_START),
+                                 year(constants$TIME_END) - 1)]
 
-pm25 <- pm25[, lapply(.SD, medianNA), .SDcols = c("pm25"), by = .(week, month, year)]
+# Fill NA with median
+pm25 <- pm25[, lapply(.SD, medianNA), .SDcols = c("pm25"), by = .(week, year)]
 
-pm25 <- pm25 %>% group_by(week, month, year) %>% 
-              summarise(avg_pm25 = mean(pm25), n = n())
+# Get weekly pm25 data
+pm25 <- pm25 %>% group_by(week, year) %>% 
+              summarise(avg_pm25 = mean(pm25), n = n()) %>% data.table()
 
 fwrite(pm25, "./data/processed/pm25.RDS", col.names = TRUE)
-#fwrite(weather, "./data/processed/weather.RDS", col.names = TRUE)
 ```
 
 Combine *weather* and *PM2.5* datasets.
 
 ```{r}
-nrow(pm25)
-nrow(weather)
+names(pm25)
+nrow(use_weather)
+setkey(pm25, .(year, week))
+
+# 
+# names(pm25)
+# names(use_weather)
+# pm25[use_weather, on = .(week, year)]
 ```
 
 ```{r}
