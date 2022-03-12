@@ -236,7 +236,15 @@ merge <- merge(taxi_monthly, temporal, sort = FALSE) %>% data.table() # 1458 row
 
 # Remove month and n
 merge <- merge[, c("month", "n") := NULL]
+```
 
+*PROBLEM FIXED -> # rows = 1458*
+
+**Taxi Weekly Data**
+
+Cleaning weekly taxi data to remove empty columns, and fix datatypes.
+
+```{r}
 # Assign merged dataset as weekly taxi data
 taxi_weekly <- merge
 
@@ -257,23 +265,30 @@ gsub(c(" ", ","),"", noquote(taxi_weekly$`Trips Per Day`))
 t <- taxi_weekly %>% arrange(year, week) %>% group_by(year, week, `License Class`) %>% data.table()
 
 t
-
 #t[, lapply(.SD, mean), by = .(year, week, `License Class`)]
 ```
 
 
-Combine *weather* and *PM2.5* datasets.
+### Combining Datasets
+
+1. Combine *weather* and *PM2.5* datasets.
 
 ```{r}
+# Read Data
 weather <- fread("./data/processed/weather.csv")
 pm25 <- fread("./data/processed/pm25.csv")
 
+# Set keys
 setkey(pm25, year, week)
 setkey(weather, year, week)
 
+# Merge
 master <- weather[pm25]
 ```
 
+### AQI Data
+
+UNDER PROGRESS.
 
 ```{r}
 ### To use New York's Air Quality System (AQS), we set up a user account.
@@ -300,7 +315,6 @@ identifiers$nyCounty_fips_code <- identifiers$ny_counties[value_represented == c
 
 ```
 
-### AQI Data
 ```{r}
 library(aqsr)
 aqi_pollutants <- aqs_list_parameters(aqs_user, pc="AQI POLLUTANTS")
