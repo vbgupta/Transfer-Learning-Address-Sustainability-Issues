@@ -7,11 +7,12 @@ output: html_notebook
 
 ```{r output=FALSE}
 # Load Libraries
-# library(usethis)
-# library(devtools)
+library(usethis)
+library(devtools)
 library(data.table)
 library(tidyverse)
 library(DataExplorer)
+library(stringi)
 # library(filenamer)
 ```
 
@@ -41,6 +42,10 @@ medianNA <- function(x){ifelse(is.na(x),
 
 meanNA <- function(x){ifelse(is.na(x),
                      mean(x, na.rm = TRUE), x)}
+
+cleanString2Num <- function(mystring) {
+}
+
 ```
 
 In the following script, we do the following:
@@ -59,6 +64,7 @@ Let's retrieve our constants for the analysis.
 
 ```{r}
 constants <- readRDS("./api/processed/nyc_constants.csv")
+identifiers <- readRDS("./api/processed/nyc_identifiers.csv")
 ```
 
 **Air Quality Data**
@@ -158,6 +164,7 @@ profile_missing(weather) %>% filter(pct_missing > 0)
 # Fill NA of missing (week, year) with median of (week-1, year)
 weather[is.na(windgust),]$windgust <- weather[year == weather[is.na(windgust),]$year[1]][week == weather[is.na(windgust),]$week[1] - 1][, windgust] %>% median()
 ```
+
 ```{r}
 ### WE DID NOT INCLUDE THESE COLUMNS IN THE FINAL PM25 DATASET ###
 
@@ -193,13 +200,12 @@ weather <- weather[,lapply(.SD, mean),
                    .SDcols = setdiff(use,c("year", "week",
                                            "primarycondition",
                                            "secondarycondition")), by = .(year, week)]
-
+# Save weather data
 fwrite(weather, "./data/processed/weather.csv")
 ```
 
 
-
-### Debugging
+**Debugging**
 
 Problem : Same week repeating for different months, because week is parsed from datetime. 
 
@@ -220,8 +226,7 @@ taxi_monthly <- fread("./data/raw/taxi/data_reports_monthly.csv", data.table = T
 taxi_monthly <- separate(taxi_monthly, "Month/Year", c("year", "month"), sep = "-") 
 
 # Fix data types 
-taxi_monthly[, `:=`(year = as.integer(year), month = 
-as.integer(month))]
+taxi_monthly[, `:=`(year = as.integer(year), month = as.integer(month))]
 
 # Select rows by temporal var
 taxi_monthly <- taxi_monthly[year %between% list(year(constants$TIME_START),year(constants$TIME_END) - 1)]
@@ -238,7 +243,8 @@ merge <- merge(taxi_monthly, temporal, sort = FALSE) %>% data.table() # 1458 row
 merge <- merge[, c("month", "n") := NULL]
 ```
 
-*PROBLEM FIXED -> # rows = 1458*
+*PROBLEM FIXED:* We aggregate data into *1458 rows*, pending merge for duplicated weekly but distinct month values. 
+
 
 **Taxi Weekly Data**
 
@@ -255,103 +261,77 @@ taxi_weekly[taxi_weekly == '-'] <- NA
 cols <- profile_missing(taxi_weekly) %>% filter(pct_missing < 0.30)
 taxi_weekly <- taxi_weekly %>% select(cols$feature) %>% tibble() %>% relocate(week, .after = year) # change week column's location
 
-taxi_weekly <- data.table(taxi_weekly)
+# Fix data types
+taxi_weekly <- data.table(taxi_weekly)[,by = .(year, week, `License Class`)]
 
-names(taxi_weekly)
-str(taxi_weekly)
-gsub(c(" ", ","),"", noquote(taxi_weekly$`Trips Per Day`))
+t <- taxi_weekly[,lapply(.SD, function(x)str_replace_all(x,"[^[:alnum:]]", "") %>% as.integer()),.SDcols = c("Trips Per Day", "Unique Drivers",
+                              "Unique Vehicles" , "Vehicles Per Day",
+                        "Avg Minutes Per Trip"), 
+                 by = .(year, week, `License Class`)]
 
-# Rearrange columns for easy joins
-t <- taxi_weekly %>% arrange(year, week) %>% group_by(year, week, `License Class`) %>% data.table()
+taxi_weekly <- taxi_weekly %>% arrange(year,week)
+t <- t %>% arrange(year, week)
 
-t
-#t[, lapply(.SD, mean), by = .(year, week, `License Class`)]
+# Cleanup columns in strings to numbers
+taxi_weekly$`Trips Per Day` <- t$`Trips Per Day`
+taxi_weekly$`Unique Drivers` <- t$`Unique Drivers`
+taxi_weekly$`Unique Vehicles` <- t$`Unique Vehicles`
+taxi_weekly$`Avg Minutes Per Trip` <- t$`Avg Minutes Per Trip`
+taxi_weekly$`Vehicles Per Day` <- t$`Vehicles Per Day`
+taxi_weekly
+
+# Columns that should be whole numbers only
+int_cols <- c("Trips Per Day", "Unique Drivers", "Unique Vehicles", "Avg Minutes Per Trip", "Vehicles Per Day")
+```
+
+```{r}
+# Combine data for same weeks data but in different months 
+# by taking mean between the pairs of 2 rows.
+taxi_weekly[, lapply(.SD, function(x)round(mean(x),1)), 
+            by = .(year, week, `License Class`)]
+
+# Fix data types
+taxi_weekly[, `:=`(`Trips Per Day` = as.integer(`Trips Per Day`),
+                    `Unique Drivers` = as.integer(`Unique Drivers`),
+                    `Unique Vehicles` = as.integer(`Unique Vehicles`),
+                    `Avg Minutes Per Trip` = as.integer(`Avg Minutes Per Trip`), 
+                     `Vehicles Per Day` = as.integer(`Vehicles Per Day`))]
+
+# Save weekly taxi data
+fwrite(taxi_weekly, "./data/processed/taxi_weekly.csv")
 ```
 
 
 ### Combining Datasets
 
-1. Combine *weather* and *PM2.5* datasets.
+1. Combine *weather* and *PM2.5* datasets into *master*.
 
 ```{r}
 # Read Data
 weather <- fread("./data/processed/weather.csv")
 pm25 <- fread("./data/processed/pm25.csv")
+taxi_weekly <- fread("./data/processed/taxi_weekly.csv")
+
 
 # Set keys
 setkey(pm25, year, week)
 setkey(weather, year, week)
+setkey(taxi_weekly, year, week)
 
 # Merge
 master <- weather[pm25]
 ```
 
-### AQI Data
-
-UNDER PROGRESS.
-
-```{r}
-### To use New York's Air Quality System (AQS), we set up a user account.
-# Store API user emails, tokens, passwords
-soc_token <- Sys.getenv("SOCRATA_TOKEN")
-soc_email <- Sys.getenv("SOCRATA_EMAIL")
-
-soc_pass <- Sys.getenv("SOCRATA_PASSWORD")
-aqs_key <- Sys.getenv("AQS_KEY")
-aqs_email <- Sys.getenv("AQS_EMAIL")
-
-# Create Users
-aqs_user <- create_user(email=aqs_email,
-                        key=aqs_key)
-```
-
-```{r}
-# New York County Identifiers
-identifiers <- list()
-state_fips <- data.table(aqs_list_states(aqs_user))
-identifiers$ny_fips_code <- state_fips[value_represented == constants$STATE]$code
-identifiers$ny_counties <- data.table(aqs_list_counties(aqs_user, state=identifiers$ny_fips_code))
-identifiers$nyCounty_fips_code <- identifiers$ny_counties[value_represented == constants$COUNTY]$code
-
-```
-
-```{r}
-library(aqsr)
-aqi_pollutants <- aqs_list_parameters(aqs_user, pc="AQI POLLUTANTS")
-aqi_forecast <- aqs_list_parameters(aqs_user, pc="FORECAST")
-```
-
-```{r}
-# New York County Identifiers
-identifiers <- list()
-state_fips <- data.table(aqs_list_states(aqs_user))
-identifiers$ny_fips_code <- state_fips[value_represented == constants$STATE]$code
-identifiers$ny_counties <- data.table(aqs_list_counties(aqs_user, state=identifiers$ny_fips_code))
-identifiers$nyCounty_fips_code <- identifiers$ny_counties[value_represented == constants$COUNTY]$code
-
-s2 <- aqs_dailyData(aqs_user=aqs_user,
-                     endpoint="byCounty",
-                     state=identifiers$ny_fips_code,
-                     county=identifiers$nyCounty_fips_code,
-                     bdate="20210101",
-                     edate="20211231",
-                     param=aqi_pollutants$code[6])
-
-s2
-```
+2. Combine *master* and *weekly taxi* datasets.
 
 ```{r}
 # Set unique keys
-setkey(temporal, week, month, year)
-setkey(taxi_monthly, month, year)
 
 # Arrange datasets
 uniqueN(temporal)
-
-pm25 %>% arrange(year, week)
-temporal %>% arrange(year, week)
-cbind(temporal$week, pm25$week)
 ```
+
+
 
 ### Road Networks 
 ```{r}
