@@ -369,7 +369,6 @@ gasRetailPrice <- rbind(gasRetailPrice, week42_gasRetailPrice,
                         week43_gasRetailPrice, week44_gasRetailPrice, week53_21_gasRetailPrice,
                         week53_20_gasRetailPrice) %>% arrange(year, week) %>% data.table()
 
-dieselRetailPrice
 # Save data
 fwrite(gasRetailPrice, "./data/processed/gasRetailPrice.csv")
 ```
@@ -432,28 +431,26 @@ dieselRetailPrice <- rbind(dieselRetailPrice, week1_dieselRetailPrice, week42_di
                            week43_dieselRetailPrice, week44_dieselRetailPrice, 
                            week53_20_dieselRetailPrice, week53_21_dieselRetailPrice) %>% arrange(year, week) %>% data.table()
 
-dieselRetailPrice
-
 # Save data
 fwrite(dieselRetailPrice, "./data/processed/dieselRetailPrice.csv")
 ```
 
 ```{r}
-motorCrashes <- tb_features$fts[9][[1]]  %>% data.table()# 9
-motorCrashes
-
-# Split datetime to retrieve week, month, year
-motorCrashes$week <- week(motorCrashes$crash_date)
-motorCrashes <- separate(motorCrashes, "crash_date", c("year", "month"), sep = "-") 
-
-# Fix data types 
-motorCrashes[, `:=`(year = as.integer(year), month = as.integer(month), week = as.integer(week))]
-
-# Drop irrelevant columns
-cols <- profile_missing(motorCrashes) %>% filter(pct_missing > 0.20)
-motorCrashes[, as.character(cols$feature) := NULL]
-
-motorCrashes[, c("number_of_persons_injured", "number_of_persons_killed", "number_of_pedestrians_injured", "number_of_pedestrians_killed", "number_of_cyclist_injured", "number_of_cyclist_killed", "number_of_motorist_injured", "number_of_motorist_killed", "borough", "zip_code", "collision_id", "vehicle_type_code1", "crash_time", "location.latitude", "location.longitude") := NULL]
+# motorCrashes <- tb_features$fts[9][[1]]  %>% data.table()# 9
+# motorCrashes
+# 
+# # Split datetime to retrieve week, month, year
+# motorCrashes$week <- week(motorCrashes$crash_date)
+# motorCrashes <- separate(motorCrashes, "crash_date", c("year", "month"), sep = "-") 
+# 
+# # Fix data types 
+# motorCrashes[, `:=`(year = as.integer(year), month = as.integer(month), week = as.integer(week))]
+# 
+# # Drop irrelevant columns
+# cols <- profile_missing(motorCrashes) %>% filter(pct_missing > 0.20)
+# motorCrashes[, as.character(cols$feature) := NULL]
+# 
+# motorCrashes[, c("number_of_persons_injured", "number_of_persons_killed", "number_of_pedestrians_injured", "number_of_pedestrians_killed", "number_of_cyclist_injured", "number_of_cyclist_killed", "number_of_motorist_injured", "number_of_motorist_killed", "borough", "zip_code", "collision_id", "vehicle_type_code1", "crash_time", "location.latitude", "location.longitude") := NULL]
 ```
 
 ```{r}
@@ -478,35 +475,35 @@ motorCrashes[, c("number_of_persons_injured", "number_of_persons_killed", "numbe
 **Electricity Consumption**
 
 ```{r}
-electricityGenerated <- fread("./data/raw/Net_generation_for_all_sectors.csv")
-
-# YYYYMM
-names(electricityGenerated)
-eng <- electricityGenerated %>% data.frame() %>% stack() 
-
-
-electricityGenerated <- electricityGenerated %>% select(-c("units", "source key")) %>% data.table()
-
-electricityGenerated[2:6]
-
-electricityGenerated$description
-
-names <- c("monthlyElectricUtility", "monthlyIndependentPowerProducers", "monthlyCommercial_NetGen", "monthlyIndustrial_NetGen", "monthlyAllSectors_NetGen" )
+# electricityGenerated <- fread("./data/raw/Net_generation_for_all_sectors.csv")
+# 
+# # YYYYMM
+# names(electricityGenerated)
+# eng <- electricityGenerated %>% data.frame() %>% stack() 
+# 
+# 
+# electricityGenerated <- electricityGenerated %>% select(-c("units", "source key")) %>% data.table()
+# 
+# electricityGenerated[2:6]
+# 
+# electricityGenerated$description
+# 
+# names <- c("monthlyElectricUtility", "monthlyIndependentPowerProducers", "monthlyCommercial_NetGen", "monthlyIndustrial_NetGen", "monthlyAllSectors_NetGen" )
 ```
 
 ```{r}
 # Split datetime into week, month, year
 # energyConsumptionAll$week <- week(energyConsumptionAll$YYYYMM)
 
-electricityGenerated$year <- substr(electricityGenerated$YYYYMM, 0,4) %>% as.integer()
+# electricityGenerated$year <- substr(electricityGenerated$YYYYMM, 0,4) %>% as.integer()
+# 
+# electricityGenerated$month <- substr(electricityGenerated$YYYYMM, 5,6) %>% as.integer()
+# 
+# 
+# unique(electricityGenerated$month)
 
-electricityGenerated$month <- substr(electricityGenerated$YYYYMM, 5,6) %>% as.integer()
 
-
-unique(electricityGenerated$month)
-
-
-electricityGenerated %>% create_report() %>% try(TRUE)
+#electricityGenerated %>% create_report() %>% try(TRUE)
 ```
 
 
@@ -518,6 +515,7 @@ electricityGenerated %>% create_report() %>% try(TRUE)
 ```{r}
 ## WE MERGE TO GET DATA FOR 209 WEEKS
 # Read Data
+aqi <- fread("./data/processed/aqi.csv")
 pm25 <- fread("./data/processed/pm25.csv")
 weather <- fread("./data/processed/weather.csv")
 taxi_weekly <- fread("./data/processed/taxi_weekly.csv")
@@ -530,19 +528,21 @@ setkey(weather, year, week)
 setkey(taxi_weekly, year, week, `License Class`)
 setkey(gasRetailPrice, year, week)
 setkey(dieselRetailPrice, year, week)
+setkey(aqi, year, week)
 
 # Merge
 master <- weather[pm25]
 master <- gasRetailPrice[master]
 master <- dieselRetailPrice[master]
 master <- master[taxi_weekly]
+master <- aqi[master]
 
-master <- master %>% tibble() %>% relocate(pm25, .after = ncol(master)) %>% data.table()
+master <- master %>% tibble() %>% relocate(pm25, .after = ncol(master)) 
+master <- master %>% relocate(aqi, .after = ncol(master)) %>% setDT()
 
-View(master)
-sum(is.na(master))
 # Save master data
 fwrite(master, "./data/processed/master_1.csv")
+nrow(master)
 ```
 
 
