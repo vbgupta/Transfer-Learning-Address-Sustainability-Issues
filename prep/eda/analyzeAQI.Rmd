@@ -13,6 +13,7 @@ library(data.table)
 library(tidyverse)
 library(DataExplorer)
 library(stringi)
+library(jsonlite)
 # library(filenamer)
 ```
 
@@ -287,7 +288,7 @@ int_cols <- c("Trips Per Day", "Unique Drivers", "Unique Vehicles", "Avg Minutes
 ```{r}
 # Combine data for same weeks data but in different months 
 # by taking mean between the pairs of 2 rows.
-taxi_weekly[, lapply(.SD, function(x)round(mean(x),1)), 
+taxi_weekly <- taxi_weekly[, lapply(.SD, function(x)round(mean(x),1)), 
             by = .(year, week, `License Class`)]
 
 # Fix data types
@@ -301,26 +302,160 @@ taxi_weekly[, `:=`(`Trips Per Day` = as.integer(`Trips Per Day`),
 fwrite(taxi_weekly, "./data/processed/taxi_weekly.csv")
 ```
 
+**Gas and Diesel Retail Prices**
+
+Let's clean up and prepare weekly Gas Retail Prices. 
+
+```{r}
+# Read data
+gasRetailPrice <- tb_features$fts[6][[1]] # 6
+
+# Select relevant columns
+gasRetailPrice <- gasRetailPrice %>% select(date, new_york_city_average_gal) %>% data.table()
+
+# Split datetime to retrieve week, month, year
+gasRetailPrice$week <- week(gasRetailPrice$date)
+gasRetailPrice <- separate(gasRetailPrice, "date", c("year", "month", "day"), sep = "-") 
+
+# Fix data types and discard irrelvant columns
+gasRetailPrice <- gasRetailPrice[, c("month", "day") := NULL] %>% tibble() %>% relocate(week, .after = year) %>% data.table()
+
+gasRetailPrice[, `:=` (new_york_city_gas_average_gal = as.numeric(new_york_city_average_gal), year = as.integer(year))]
+gasRetailPrice[, new_york_city_average_gal := NULL]
+
+# Save data
+fwrite(gasRetailPrice, "./data/processed/gasRetailPrice.csv")
+```
+
+Now let's clean up and prepare weekly Diesel Retail Prices. 
+
+```{r}
+# Read data
+dieselRetailPrice <- tb_features$fts[5][[1]] # 5
+
+# Select relevant columns
+dieselRetailPrice <- dieselRetailPrice %>% select(date, new_york_city_average_gal) %>% data.table()
+
+# Split datetime to retrieve week, month, year
+dieselRetailPrice$week <- week(dieselRetailPrice$date)
+dieselRetailPrice <- separate(dieselRetailPrice, "date", c("year", "month", "day"), sep = "-") 
+
+# Fix data types and discard irrelevant columns
+dieselRetailPrice <- dieselRetailPrice[, c("month", "day") := NULL] %>% tibble() %>% relocate(week, .after = year) %>% data.table()
+
+dieselRetailPrice[, `:=` (new_york_city_diesel_average_gal  = as.numeric(new_york_city_average_gal), year = as.integer(year))]
+
+dieselRetailPrice[, new_york_city_average_gal := NULL]
+
+# Save data
+fwrite(dieselRetailPrice, "./data/processed/dieselRetailPrice.csv")
+```
+
+```{r}
+motorCrashes <- tb_features$fts[9][[1]]  %>% data.table()# 9
+
+motorCrashes
+
+# Split datetime to retrieve week, month, year
+motorCrashes$week <- week(motorCrashes$crash_date)
+motorCrashes <- separate(motorCrashes, "crash_date", c("year", "month"), sep = "-") 
+
+# Fix data types 
+motorCrashes[, `:=`(year = as.integer(year), month = as.integer(month), week = as.integer(week))]
+
+# Drop irrelevant columns
+cols <- profile_missing(motorCrashes) %>% filter(pct_missing > 0.20)
+motorCrashes[, as.character(cols$feature) := NULL]
+
+motorCrashes[, c("number_of_persons_injured", "number_of_persons_killed", "number_of_pedestrians_injured", "number_of_pedestrians_killed", "number_of_cyclist_injured", "number_of_cyclist_killed", "number_of_motorist_injured", "number_of_motorist_killed", "borough", "zip_code", "collision_id", "vehicle_type_code1", "crash_time", "location.latitude", "location.longitude") := NULL]
+```
+
+```{r}
+# ONLY 2018 and 2019 data here
+# busCustomerJourneyMetricsMTA <- tb_features$fts[3][[1]]
+# 
+# # Split datetime to retrieve week, month, year
+# busCustomerJourneyMetricsMTA <- separate(busCustomerJourneyMetricsMTA, "month", c("year", "month"), sep = "-")  %>% data.table()
+# 
+# period <- busCustomerJourneyMetricsMTA$period
+# 
+# busCustomerJourneyMetricsMTA
+# 
+# busCustomerJourneyMetricsMTA[, c("trip_type", "borough", "route_id", "period") := NULL]
+# busCustomerJourneyMetricsMTA
+# 
+# unique(busCustomerJourneyMetricsMTA$year)
+```
+
+
+
+**Electricity Consumption**
+
+```{r}
+electricityGenerated <- fread("./data/raw/Net_generation_for_all_sectors.csv")
+
+# YYYYMM
+names(electricityGenerated)
+eng <- electricityGenerated %>% data.frame() %>% stack() 
+
+
+electricityGenerated <- electricityGenerated %>% select(-c("units", "source key")) %>% data.table()
+
+electricityGenerated[2:6]
+
+electricityGenerated$description
+
+names <- c("monthlyElectricUtility", "monthlyIndependentPowerProducers", "monthlyCommercial_NetGen", "monthlyIndustrial_NetGen", "monthlyAllSectors_NetGen" )
+```
+
+```{r}
+# Split datetime into week, month, year
+# energyConsumptionAll$week <- week(energyConsumptionAll$YYYYMM)
+
+electricityGenerated$year <- substr(electricityGenerated$YYYYMM, 0,4) %>% as.integer()
+
+electricityGenerated$month <- substr(electricityGenerated$YYYYMM, 5,6) %>% as.integer()
+
+
+unique(electricityGenerated$month)
+
+
+electricityGenerated %>% create_report() %>% try(TRUE)
+```
+
+
 
 ### Combining Datasets
 
 1. Combine *weather* and *PM2.5* datasets into *master*.
 
 ```{r}
+## WE MERGE TO GET DATA FOR 209 WEEKS
 # Read Data
 weather <- fread("./data/processed/weather.csv")
 pm25 <- fread("./data/processed/pm25.csv")
 taxi_weekly <- fread("./data/processed/taxi_weekly.csv")
-
+gasRetailPrice <- fread("./data/processed/gasRetailPrice.csv")
+dieselRetailPrice <- fread("./data/processed/dieselRetailPrice.csv")
 
 # Set keys
 setkey(pm25, year, week)
 setkey(weather, year, week)
 setkey(taxi_weekly, year, week)
+setkey(gasRetailPrice, year, week)
+setkey(dieselRetailPrice, year, week)
 
 # Merge
 master <- weather[pm25]
+master <- master[taxi_weekly]
+master <- master[gasRetailPrice]
+master <- master[dieselRetailPrice]
+nrow(pm25)
+
+master <- master %>% tibble() %>% relocate(pm25, .after = ncol(master)) %>% data.table()
+
 ```
+
 
 2. Combine *master* and *weekly taxi* datasets.
 
