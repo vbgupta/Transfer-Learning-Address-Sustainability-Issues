@@ -1,6 +1,17 @@
 # DS440-Transfer-Learning-Address-Sustainability-Issues
 
+UPDATE: *Latest Version **New York Version 2** is now available in Azure SQL as `newyork_v2`.*
+
 ### Datasets
+
+*Versions*
+
+`newyork_v2` changes - Added 1 new variable AQI weekly values as **"aqi"**
+
+`newyork_v1` changes - Added 34 new variables listed below
+
+    year, week, new_york_city_diesel_average_gal, new_york_city_gas_average_gal, tempmax, tempmin, temp, feelslikemax, feelslikemin, feelslike, humidity, dew, precip, precipcover, snow, snowdepth, windgust, windspeed, winddir, sealevelpressure, cloudcover, visibility, License Class, Trips Per Day, Unique Drivers, Unique Vehicles, Vehicles Per Day, Avg Days Vehicles on Road, Avg Hours Per Day Per Vehicle, Avg Days Drivers on Road, Avg Hours Per Day Per Driver, Avg Minutes Per Trip, pm25, aqi
+                    
 
 *Overview*
 * **Database**: Master datasets are injected into Azure SQL database named *sustainability*.
