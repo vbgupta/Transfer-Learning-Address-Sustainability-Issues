@@ -21,8 +21,8 @@ UPDATE: *Latest Version **New York Version 2** is now available in Azure SQL as 
 * **Temporal**: All datasets are between Jan 1, 2018 and Jan 1, 2022, aggregated at a minimum granularity of *weekly*.
 
 *Number of Records*
-* Number of records per feature for 4 years = 52 weeks * 4 years = 208 records
-* Each dataset has *n1* features *x* with *n2* number of subfeatures *s*, so total records we expect in our dataset = 208 * n1 * n2
+* Number of records per feature for 4 years = 53 weeks * 4 years = 212 records
+* Each dataset has *n1* features *x* with *n2* number of subfeatures *s*, so total records we expect in our dataset = 212 * n1 * n2
 * We are still considering predicting particulate matter and air quality index together as (PM2.5, AQI), and the AQI range bands. 
 
 *Scale by US Environmental Protection Agency (EPA)*
