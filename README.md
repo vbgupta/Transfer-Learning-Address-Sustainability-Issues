@@ -1,6 +1,9 @@
 # DS440-Transfer-Learning-Address-Sustainability-Issues
 
 UPDATE: *Latest Version **New York Version 2** is now available in Azure SQL as `newyork_v2`.*
+*Latest Version **Philadelphia Version 2** is now available in Azure SQL as `PhillyFeatures_V2`.*
+*Latest Version **Chicago Version 2** is now available in Azure SQL as `ChicagoFeatures_V2`.*
+*Latest Version **Hazleton Version 1** is now available in Azure SQL as `HazletonFeatures`.*
 
 ### Datasets
 
@@ -11,7 +14,26 @@ UPDATE: *Latest Version **New York Version 2** is now available in Azure SQL as 
 `newyork_v1` changes - Added 34 new variables listed below
 
     year, week, new_york_city_diesel_average_gal, new_york_city_gas_average_gal, tempmax, tempmin, temp, feelslikemax, feelslikemin, feelslike, humidity, dew, precip, precipcover, snow, snowdepth, windgust, windspeed, winddir, sealevelpressure, cloudcover, visibility, License Class, Trips Per Day, Unique Drivers, Unique Vehicles, Vehicles Per Day, Avg Days Vehicles on Road, Avg Hours Per Day Per Vehicle, Avg Days Drivers on Road, Avg Hours Per Day Per Driver, Avg Minutes Per Trip, pm25, aqi
-                    
+
+`PhillyFeatures_V2` changes - Redid dataset layout to ensure 212 records (made each feature its own column rather than one column with feature name), took weekly average for columns if multiple values given per week, variables now as follows
+    
+    week, month, year, county, city, AQI_Weekly_Measurement, Weather_TMAX, Weather_TMIN, Weather_AWND, Weather_PRCP, Pollution_pm25, Pollution_o3, Pollution_no2, Pollution_so2, Pollution_co, traffic_bike_counts, traffic_ped_counts, traffic_vehicle_counts
+
+`PhillyFeatures` changes - Added 7 variables listed below
+    
+    feature_year, feature_week, feature_month, feature_name, feature_lat, feature_long, feature_val
+
+`ChicagoFeatures_V2` changes - Redid dataset layout to ensure 212 records (made each feature its own column rather than one column with feature name), took weekly average for columns if multiple values given per week, variables now as follows
+    
+    week, month, year, county, city, AQI_Weekly_Measurement, Weather_TMAX, Weather_TMIN, Weather_AWND, Weather_PRCP, Pollution_pm25, Pollution_o3, avg_weekday_rides, avg_saturday_rides, avg_sunday_holiday_rides, traffic_taxi_trip_miles, traffic_taxi_trip_totals, traffic_rideshare_miles, traffic_speed, traffic_bus_count
+
+`ChicagoFeatures` changes - Added 7 variables listed below
+    
+    feature_year, feature_week, feature_month, feature_name, feature_lat, feature_long, feature_val
+               
+`HazletonFeatures` changes - Added 11 variables listed below (information on last 5 variables can be viewed at: https://docs-pennshare.hub.arcgis.com/pages/traffic-volumes)
+
+    week, month, year, county, city, Weather_PRCP, DLY_TRK_VMT, DLY_VMT, WKDY_TRK_CUR, CUR_AADT, ADTT_CUR 
 
 *Overview*
 * **Database**: Master datasets are injected into Azure SQL database named *sustainability*.
@@ -21,8 +43,8 @@ UPDATE: *Latest Version **New York Version 2** is now available in Azure SQL as 
 * **Temporal**: All datasets are between Jan 1, 2018 and Jan 1, 2022, aggregated at a minimum granularity of *weekly*.
 
 *Number of Records*
-* Number of records per feature for 4 years = 52 weeks * 4 years = 208 records
-* Each dataset has *n1* features *x* with *n2* number of subfeatures *s*, so total records we expect in our dataset = 208 * n1 * n2
+* Number of records per feature for 4 years = 53 weeks * 4 years = 212 records
+* Each dataset has *n1* features *x* with *n2* number of subfeatures *s*, so total records we expect in our dataset = 212 * n1 * n2
 * We are still considering predicting particulate matter and air quality index together as (PM2.5, AQI), and the AQI range bands. 
 
 *Scale by US Environmental Protection Agency (EPA)*
