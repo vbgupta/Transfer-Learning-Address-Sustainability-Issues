@@ -1,3 +1,5 @@
+**THE FOLLOWING CODE HAS BEEN MODIFIED AND FOUND ON https://towardsdatascience.com/creating-multipage-applications-using-streamlit-efficiently-b58a58134030**
+
 import streamlit as st
 
 # Custom imports
