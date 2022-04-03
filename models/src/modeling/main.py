@@ -1,4 +1,5 @@
 #-----Main Model File----#
+
 class Model:
 
     def __init__(self, data):
@@ -54,6 +55,8 @@ class Model:
         model.fit(X_train.values.reshape(32, 936), y_train.values.reshape(-1 , 936), epochs = 10)
         predictons = model.evaluate(X_test.values.reshape(32, 318), y_test.values.reshape(-1 ,318))
 
+        print(model.predict([[4, 300, 500]]))
+
         return model, predictions
 
     def plot_preds(self, X_train, y_train, X_test, y_test, model, predictions):
@@ -66,16 +69,20 @@ class Model:
 
         return _
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     from database.fetch_data import nyc_v2
     from sklearn.ensemble import RandomForestRegressor
     import pandas as pd
     import warnings
     from sklearn.decomposition import PCA
     import tensorflow as tf
+    import pathlib
+    from path import Path
+    import os
+    d = Path(__file__).parent
 
-    warnings.filterwarnings("ignore")       
+    warnings.filterwarnings("ignore")
     data = nyc_v2()
     print(data.head())
 
