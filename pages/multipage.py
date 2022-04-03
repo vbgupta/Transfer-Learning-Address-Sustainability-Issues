@@ -1,3 +1,5 @@
+** THE FOLLOWING CODE HAS BEEN FOUND ON https://towardsdatascience.com/creating-multipage-applications-using-streamlit-efficiently-b58a58134030**
+
 """
 This file is the framework for generating multiple Streamlit applications
 through an object oriented framework.
