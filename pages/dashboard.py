@@ -48,11 +48,14 @@ def app():
 
     # description
     st.write("This application has been designed using transfer learning"
-             " to predict the AQI values for specific cities. Initially, New York City was the source city of the model "
-             "and the weights of this city were transferred to predict on similar cities of"
-             " Chicago, IL, Philadelphia, PA, and Hazleton, PA. Below the user will get the chance to chose a city, "
-             "week, and year and find out the AQI for the inputs. ")
-    st.markdown("***This application has been developed as part of Pennsylvania State University DS440 Capstone Project.***")
+             " to predict the AQI values for specific cities. Initially, New York City was "
+             "the source city of the model and the weights of this city were transferred to "
+             "predict on similar cities of Chicago, IL, Philadelphia, PA, and Hazleton, PA. "
+             "Below the user will get the chance to chose a city, week, and year and find out the "
+             "AQI for the inputs. ")
+
+    st.markdown("***This application has been developed as part of "
+                "Pennsylvania State University DS440 Capstone Project.***")
 
     # user input variables
     city = st.selectbox("Please enter the city you would like to predict:",
@@ -79,8 +82,8 @@ def app():
             df = pd.DataFrame(d)
             st.map(df)
         # change result to [0] and[1]
-        st.success('The predicted AQI is {}'.format(result))  # predicted AQI for inputted row_num week and year
-        st.warning('The actual AQI is {}'. format(result)) # actual AQI for inputted row_num week and year
+        st.success('The predicted AQI is')  # predicted AQI for inputted row_num week and year
+        st.warning('The actual AQI is') # actual AQI for inputted row_num week and year
 
         # feature row
         st.header("Features used in predicting the AQI value")
@@ -95,7 +98,3 @@ def app():
              st.header('Overall RMSE of Philadelphia model:')
         else:
             st.header('Overall RMSE of Hazleton model: {}'.format('0.77534'))
-
-
-    # add in row of features
-    # add page with visualizations/stats
