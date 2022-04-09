@@ -2,11 +2,12 @@ import streamlit as st
 
 
 def app():
+    st.header("Chicago Information")
     # description?
 
-    st.header("Visualizations")
+    st.subheader("Visualizations")
 
     # add in screenshots of visualizations
 
-    st.header("Statistics")
+    st.subheader("Statistics")
     # add in stats found from data
