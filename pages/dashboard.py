@@ -1,41 +1,60 @@
-# Import Libraries
 import statistics
+import numpy as np
 import pandas as pd
 import streamlit as st
 
 
 # PREDICTION FUNCTION
 def predict_AQI(city, week, year, multi_week, month):
+    
+    # if user chooses chicago
     if city == 'Chicago':
         data = pd.read_csv("pages/data/chi_actual_pred.csv")
+        
+        # if user wants multiple week outputted
         if multi_week:
             result = []
             actual = []
+            # get predicted and actual values of weeks for given year
             for i in week.values():
                 result_val = pd.DataFrame(data[(data["week"] == (i)) & (data["year"] == int(year))])
                 result_val = result_val.iloc[:, 1].values
                 actual_val = pd.DataFrame(data[(data["week"] == (i)) & (data["year"] == int(year))])
                 actual_val = actual_val.iloc[:, 6].values
-                result.append(result_val)
-                actual.append(actual_val)
-            return result, actual
-
+                result.append(np.array_repr(result_val))
+                actual.append(np.array_repr(actual_val))
+                f_r = []
+                f_a = []
+                # reformat array output
+                for i in result:
+                    i = i.replace('array([', '')
+                    f_r.append(i.replace('])', ''))
+                for i in actual:
+                    i = i.replace('array([', '')
+                    f_a.append(i.replace('])', ''))
+            return f_r, f_a
+        
+        # if user wants monthly average
         elif month != '0':
             result = pd.DataFrame(data[(data["month"] == int(month)) & (data["year"] == int(year))])
             result = statistics.mean(result.iloc[:, 1].values)
             actual = pd.DataFrame(data[(data["month"] == int(month)) & (data["year"] == int(year))])
             actual = statistics.mean(actual.iloc[:, 6].values)
             return result, actual
-
+        
+        # if user only wants a predicted and actual aqi for inputted week / year
         else:
             result = pd.DataFrame(data[(data["week"] == int(week)) & (data["year"] == int(year))])
             result = result.iloc[:, 1].values
             actual = pd.DataFrame(data[(data["week"] == int(week)) & (data["year"] == int(year))])
             actual = actual.iloc[:, 6].values
             return result, actual
-
+        
+    # if the user chooses philly
     if city == 'Philadelphia':
         data = pd.read_csv("pages/data/phl_actual_pred.csv")
+        
+        # if user wants multiple week outputted
         if multi_week:
             result = []
             actual = []
@@ -44,24 +63,35 @@ def predict_AQI(city, week, year, multi_week, month):
                 result_val = result_val.iloc[:, 1].values
                 actual_val = pd.DataFrame(data[(data["week"] == (i)) & (data["year"] == int(year))])
                 actual_val = actual_val.iloc[:, 7].values
-                result.append(result_val)
-                actual.append(actual_val)
-            return result, actual
-
+                result.append(np.array_repr(result_val))
+                actual.append(np.array_repr(actual_val))
+                f_r = []
+                f_a = []
+                
+                # reformat array output
+                for i in result:
+                    i = i.replace('array([', '')
+                    f_r.append(i.replace('])', ''))
+                for i in actual:
+                    i = i.replace('array([', '')
+                    f_a.append(i.replace('])', ''))
+            return f_r, f_a
+        
+        # if the user wants monthly avg aqi
         elif month != '0':
             result = pd.DataFrame(data[(data["month"] == int(month)) & (data["year"] == int(year))])
             result = statistics.mean(result.iloc[:, 1].values)
             actual = pd.DataFrame(data[(data["month"] == int(month)) & (data["year"] == int(year))])
             actual = statistics.mean(actual.iloc[:, 7].values)
             return result, actual
-
+        
+        # if user only wants to choose week and year
         else:
             result = pd.DataFrame(data[(data["week"] == int(week)) & (data["year"] == int(year))])
             result = result.iloc[:, 1].values
             actual = pd.DataFrame(data[(data["week"] == int(week)) & (data["year"] == int(year))])
             actual = actual.iloc[:, 7].values
             return result, actual
-
 
 
 # APPLICATION FUNCTION
@@ -86,8 +116,8 @@ def app():
                         ('2018', '2019', '2020', '2021'))
 
     funct = st.selectbox("If you would rather choose multiple weeks of information or a monthly "
-                     "average for a given year, please select one of the following, else keep blank",
-                     ('-', 'Multiple weeks for given year', 'Average AQI for given month and year'))
+                         "average for a given year, please select one of the following, else keep blank",
+                         ('-', 'Multiple weeks for given year', 'Average AQI for given month and year'))
 
     if funct == 'Multiple weeks for given year':
         week_dict = {}
@@ -96,13 +126,13 @@ def app():
         while count != 0:
             week_dict[count] = ""
             count -= 1
-        for count,value in week_dict.items():
+        for count, value in week_dict.items():
             week_dict[count] = int(st.number_input("Please enter the week of the year you"
-                                                " would like to predict:",min_value=1, max_value=53, key=count))
+                                                   " would like to predict:", min_value=1, max_value=53, key=count))
 
     if funct == 'Average AQI for given month and year':
         month = st.selectbox("Please enter the month you would like to predict:", ('1', '2', '3', '4', '5', '6',
-                                                                                                            '7', '8',
+                                                                                   '7', '8',
                                                                                    '9', '10', '11', '12'))
 
     if st.button('Predict'):
