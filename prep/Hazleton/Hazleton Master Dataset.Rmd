@@ -1,0 +1,152 @@
+---
+title: "R Notebook"
+author: "Ally Racho"
+output: html_notebook
+---
+
+
+# clear environment
+```{r}
+#clear environment
+rm(list = ls())
+```
+
+#libraries need
+```{r}
+library(jsonlite)
+library(readr)
+library(lubridate)
+library(dplyr)
+library(tidyverse)
+library(sf) # shp file 
+```
+
+
+## WQI 
+# need to choose which features needed
+```{r}
+# load data
+HazletonWQI <- read_csv("./Hazleton/Data/HazletonWQI.csv")
+
+# reformat date before split
+HazletonWQI$ActivityStartDate <- strptime(as.character(HazletonWQI$ActivityStartDate), "%m/%d/%Y")
+format(HazletonWQI$newdate, "%Y-%m-%d")
+
+# split date into month / year 
+HazletonWQI <-
+  HazletonWQI %>%
+  dplyr::mutate(year = lubridate::year(ActivityStartDate), 
+                month = lubridate::month(ActivityStartDate), 
+                day = lubridate::day(ActivityStartDate))
+
+# subset out wanted variables and create new dataframe
+vars <- c("ResultMeasureValue", "CharacteristicName", "month", "year", "ActivityLocation/LatitudeMeasure", "ActivityLocation/LongitudeMeasure", "ActivityStartTime/Time")
+HazletonWQIcon <- HazletonWQI[vars]
+
+# rename variables
+HazletonWQIcon <- 
+  HazletonWQIcon %>%
+  rename(
+    WQI_measure = ResultMeasureValue,
+    WQI_month = month, 
+    WQI_year = year,
+    WQI_lat = 'ActivityLocation/LatitudeMeasure',
+    WQI_long = 'ActivityLocation/LongitudeMeasure', 
+    WQI_time = 'ActivityStartTime/Time'
+  )
+
+# add city name variable
+HazletonWQIcon$City <- "Hazleton"
+HazletonWQIcon$County <- "Luzerne"
+HazletonWQIcon$WQI_year <- HazletonWQIcon$WQI_year + 2000
+```
+
+
+# Weather
+```{r}
+#load data
+hazletonWeather <- read_csv("./Hazleton/Data/Hazleton_weather.csv")
+
+# split date into month / year 
+hazletonWeather <-
+  hazletonWeather %>%
+  dplyr::mutate(year = lubridate::year(DATE), 
+                month = lubridate::month(DATE), 
+                day = lubridate::day(DATE))
+
+hazletonWeather$week <- lubridate::week(ymd(hazletonWeather$DATE))
+
+vars <- c( "PRCP","week", "year", "month")
+hazletonWeathercon <- hazletonWeather[vars]
+
+# rename variables
+hazletonWeathercon <- 
+  hazletonWeathercon %>%
+  rename(
+    Weather_PRCP = PRCP
+  )
+
+hazletonWeathercon <- 
+  hazletonWeathercon %>%
+  group_by(week, year) %>%
+  mutate(Weather_PRCP = mean(Weather_PRCP))
+
+hazletonWeathercon <- distinct(hazletonWeathercon)
+hazletonWeathercon <- distinct(hazletonWeathercon, Weather_PRCP, .keep_all = T)
+```
+
+## Traffic Volume 
+```{r}
+#description of variables -- https://docs-pennshare.hub.arcgis.com/pages/traffic-volumes
+
+#load data
+hazletonTraffic <- read_csv("./Hazleton/Data/PAtraffic.csv")
+
+hazletonTraffic$VOL_CNT_DATE <- as.Date(hazletonTraffic[["VOL_CNT_DATE"]], "%Y%m%d")
+
+# split date into month / year 
+hazletonTraffic <-
+  hazletonTraffic %>%
+  dplyr::mutate(year = lubridate::year(VOL_CNT_DATE), 
+                month = lubridate::month(VOL_CNT_DATE), 
+                day = lubridate::day(VOL_CNT_DATE))
+
+hazletonTraffic$week <- lubridate::week(ymd(hazletonTraffic$VOL_CNT_DATE))
+
+hazletonTraffic <- subset(hazletonTraffic, (CTY_CODE == "40"))
+
+vars <- c("week", "year", "month", "DLY_TRK_VMT", "DLY_VMT", "WKDY_TRK_CUR", "CUR_AADT", "ADTT_CUR")
+hazletonTrafficcon <- hazletonTraffic[vars]
+
+hazletonTrafficcon <- 
+  hazletonTrafficcon %>%
+  group_by(week, year) %>%
+  mutate(DLY_TRK_VMT = mean(DLY_TRK_VMT), 
+         DLY_VMT = mean(DLY_VMT), 
+         WKDY_TRK_CUR = mean(WKDY_TRK_CUR), 
+         CUR_AADT = mean(CUR_AADT), 
+         ADTT_CUR = mean(ADTT_CUR))
+
+hazletonTrafficcon <- distinct(hazletonTrafficcon)
+```
+
+
+## Road Network
+```{r}
+library(rgdal)
+Hazleton_spdf <- readOGR( 
+  dsn= paste0(getwd(),"./Hazleton/Data/Hazleton_map.shp"), 
+  layer = "lines",
+  verbose = FALSE
+)
+
+par(mar=c(0,0,0,0))
+plotHazleton_spdf, col="#f2f2f2", bg="black", lwd=0.25, border=0 )
+```
+## Combine datasets to create master
+```{r}
+Hazleton_feature <- merge(hazletonWeathercon, hazletonTrafficcon, by = c("week", "month", "year"), all.x = T)
+Hazleton_feature$city = "Hazleton"
+Hazleton_feature$county = "Luzerne"
+write.csv(Hazleton_feature, file = "./Hazleton/Data/HazletonFeatures.csv")
+```
