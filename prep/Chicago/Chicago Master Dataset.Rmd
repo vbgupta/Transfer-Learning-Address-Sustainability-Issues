@@ -1,0 +1,395 @@
+---
+title: "Chicago: Master Dataset"
+Author: Ally Racho
+output: html_notebook
+---
+
+Notes:
+- road network not included in feature table 
+- had to average most variables since some datasets had multiple values per week
+- rideshare / taxi date is given only as 1/1 so lots of NAs
+- chicago traffic only 5 weeks in 2018 so again lots of NAs
+- AQI missing a few weeks 
+
+```{r}
+#clear environment
+rm(list = ls())
+```
+
+```{r}
+#libraries need
+library(readr)
+library(sf)
+library(tidyverse)
+library(jsonlite)
+library(lubridate)
+```
+
+
+## AQI
+# data taken every 6 days
+```{r}
+#load data
+ChicagoAQI <- read_csv("./Chicago/Data/ChicagoAQI.csv")
+
+# split date into month / year 
+ChicagoAQI <-
+  ChicagoAQI %>%
+  dplyr::mutate(year = lubridate::year(Data.date_local), 
+                month = lubridate::month(Data.date_local), 
+                day = lubridate::day(Data.date_local))
+
+ChicagoAQI$week <- lubridate::week(ymd(ChicagoAQI$Data.date_local))
+
+# subset out wanted variables and create new dataframe
+vars <- c("Data.county", "Data.sample_measurement", "week", "month", "year")
+ChicagoAQIcon <- na.omit(ChicagoAQI[vars])
+
+# rename variables
+ChicagoAQIcon <- 
+  ChicagoAQIcon %>%
+  rename(
+    County = Data.county,
+    AQI_Weekly_Measurement = Data.sample_measurement,
+  )
+
+ChicagoAQIcon <-
+  ChicagoAQIcon %>%
+  group_by(week, year) %>%
+  mutate(AQI_Weekly_Measurement = mean(AQI_Weekly_Measurement)) %>%
+  ungroup()
+
+ChicagoAQIcon$City <- "Chicago"
+
+ChicagoAQIcon <- distinct(ChicagoAQIcon)
+ChicagoAQIcon <- distinct(ChicagoAQIcon, AQI_Weekly_Measurement, .keep_all = T)
+write.csv(ChicagoAQIcon, file = "./Chicago/Data/Chicago_AQI.csv")
+```
+
+## WQI 
+```{r}
+#load data
+ChicagoWQI <- read_csv("./Chicago/Data/ChicagoWQI.csv")
+
+# reformat date before split
+ChicagoWQI$ActivityStartDate <- strptime(as.character(ChicagoWQI$ActivityStartDate), "%m/%d/%Y")
+format(ChicagoWQI$newdate, "%Y-%m-%d")
+
+# split date into month / year 
+ChicagoWQI <-
+  ChicagoWQI %>%
+  dplyr::mutate(year = lubridate::year(ActivityStartDate), 
+                month = lubridate::month(ActivityStartDate), 
+                day = lubridate::day(ActivityStartDate))
+
+# subset out wanted variables and create new dataframe
+vars <- c("ResultMeasureValue", "CharacteristicName", "month", "year", "ActivityLocation/LatitudeMeasure", "ActivityLocation/LongitudeMeasure", "ActivityStartTime/Time")
+ChicagoWQIcon <- ChicagoWQI[vars]
+
+# rename variables
+ChicagoWQIcon <- 
+  ChicagoWQIcon %>%
+  rename(
+    WQI_measure = ResultMeasureValue,
+    WQI_month = month, 
+    WQI_year = year,
+    WQI_lat = 'ActivityLocation/LatitudeMeasure',
+    WQI_long = 'ActivityLocation/LongitudeMeasure', 
+    WQI_time = 'ActivityStartTime/Time'
+  )
+
+# add city name variable
+ChicagoWQIcon$City <- "Chicago"
+ChicagoWQIcon$County <- "Cook"
+ChicagoWQIcon$WQI_year <- ChicagoWQIcon$WQI_year + 2000
+```
+
+## Weather
+
+```{r}
+#load data
+chicagoWeather <- read_csv("./Chicago/Data/Chicago_weather.csv")
+
+
+# split date into month / year 
+chicagoWeather <-
+  chicagoWeather %>%
+  dplyr::mutate(year = lubridate::year(DATE), 
+                month = lubridate::month(DATE), 
+                day = lubridate::day(DATE))
+
+chicagoWeather$week <- lubridate::week(ymd(chicagoWeather$DATE))
+
+
+vars <- c("TMAX", "TMIN", "AWND", "PRCP", "week", "year", "month")
+ChicagoWeathercon <- na.omit(chicagoWeather[vars])
+
+# rename variables
+ChicagoWeathercon <- 
+  ChicagoWeathercon %>%
+  rename(
+    Weather_TMAX = TMAX, 
+    Weather_TMIN = TMIN, 
+    Weather_AWND = AWND, 
+    Weather_PRCP = PRCP
+  )
+
+
+ChicagoWeathercon <- 
+  ChicagoWeathercon %>%
+  group_by(week, year) %>%
+  mutate(Weather_TMAX = mean(Weather_TMAX), 
+            Weather_TMIN = mean(Weather_TMIN),
+            Weather_AWND = mean(Weather_AWND),
+            Weather_PRCP = mean(Weather_PRCP))
+ChicagoWeathercon <- distinct(ChicagoWeathercon)
+ChicagoWeathercon <- distinct(ChicagoWeathercon, Weather_TMAX, .keep_all = T)
+```
+
+## Pollution
+```{r}
+#load data
+chicagoPollution <- read_csv("./Chicago/Data/Chicago_pollution.csv")
+
+# split date into month / year 
+chicagoPollution <-
+  chicagoPollution %>%
+  dplyr::mutate(year = lubridate::year(date), 
+                month = lubridate::month(date), 
+                day = lubridate::day(date))
+
+chicagoPollution$week <- lubridate::week(ymd(chicagoPollution$date))
+
+vars <- c("pm25", "o3", "year", "month", "week")
+chicagoPollutioncon <- chicagoPollution[vars]
+
+# rename variables
+chicagoPollutioncon <- 
+  chicagoPollutioncon %>%
+  rename(
+    Pollution_pm25 = pm25, 
+    Pollution_o3 = o3
+  )
+
+#gather data to condense feature names and values
+#chicagoPollutioncon <- pivot_longer(chicagoPollutioncon, cols = c("Pollution_pm25", "Pollution_o3"))
+  
+
+#only use data from 2018 - 2022
+chicagoPollutioncon <- subset(chicagoPollutioncon, year >=2018)
+
+ChicagoPollutioncon <- 
+  chicagoPollutioncon %>%
+  group_by(week, month, year) %>%
+  summarise(Pollution_pm25 = mean(Pollution_pm25), 
+            Pollution_o3 = mean(Pollution_o3))
+
+```
+
+## Traffic Congestion
+```{r}
+result <- fromJSON("./Chicago/Data/chitraffic.json")
+chicagotraffic <- as.data.frame(result)
+
+chicagotraffic <- separate(chicagotraffic, col = "time", into = c("date", "time"), sep = "T")
+
+# split date into month / year 
+chicagotraffic <-
+  chicagotraffic %>%
+  dplyr::mutate(year = lubridate::year(date), 
+                month = lubridate::month(date), 
+                day = lubridate::day(date))
+
+chicagotraffic$week <- lubridate::week(ymd(chicagotraffic$date))
+chicagotraffic$bus_count <- as.numeric(chicagotraffic$bus_count)
+chicagotraffic$speed <- as.numeric(chicagotraffic$speed)
+
+vars <- c("week", "month", "year", "speed", "bus_count")
+chicagotrafficcon <- na.omit(chicagotraffic[vars])
+
+
+###
+#gather data to condense feature names and values
+#chicagotrafficcon <- pivot_longer(chicagotrafficcon, cols = c("traffic_speed", "traffic_bus_count"))
+
+chicagotrafficcon <- 
+  chicagotrafficcon %>%
+  rename(
+    traffic_speed = speed,
+    traffic_bus_count = bus_count,
+  )
+
+#chicagotrafficcon$feature_lat <- as.numeric(chicagotrafficcon$feature_lat)
+#chicagotrafficcon$feature_long <- as.numeric(chicagotrafficcon$feature_long)
+#chicagotrafficcon$feature_val <- as.numeric(chicagotrafficcon$feature_val)
+
+chicagotrafficcon <- 
+  chicagotrafficcon %>%
+  group_by(week, month, year) %>%
+  summarise(traffic_speed = mean(traffic_speed), 
+            traffic_bus_count = mean(traffic_bus_count))
+```
+
+## Taxi Traffic
+```{r}
+result <- fromJSON("./Chicago/Data/chi_taxi2018.json")
+chicagotaxi2018 <- as.data.frame(result)
+
+chicagotaxi2018 <- subset(chicagotaxi2018, select = -c(pickup_centroid_location, dropoff_centroid_location))
+result <- fromJSON("./Chicago/Data/chi_taxi2019.json")
+chicagotaxi2019 <- as.data.frame(result)
+chicagotaxi2019 <- subset(chicagotaxi2019, select = -c(pickup_centroid_location, dropoff_centroid_location))
+result <- fromJSON("./Chicago/Data/chi_taxi2020.json")
+chicagotaxi2020 <- as.data.frame(result)
+chicagotaxi2020 <- subset(chicagotaxi2020, select = -c(pickup_centroid_location, dropoff_centroid_location))
+result <- fromJSON("./Chicago/Data/chi_taxi2021.json")
+chicagotaxi2021 <- as.data.frame(result)
+chicagotaxi2021 <- subset(chicagotaxi2021, select = -c(pickup_centroid_location, dropoff_centroid_location))
+#combine all years to one dataset
+df_list <- list(chicagotaxi2018, chicagotaxi2019, chicagotaxi2020, chicagotaxi2021)
+
+###### fix -- duplicate 'row.names' are not allowed
+ChicagoTaxi <- Reduce(function(x,y)merge(x,y,all = TRUE), df_list, accumulate = FALSE)
+
+# split date into month / year 
+ChicagoTaxi <-
+  ChicagoTaxi %>%
+  dplyr::mutate(year = lubridate::year(trip_start_timestamp), 
+                month = lubridate::month(trip_start_timestamp), 
+                day = lubridate::day(trip_start_timestamp))
+ChicagoTaxi$trip_miles <- as.numeric(ChicagoTaxi$trip_miles)
+
+ChicagoTaxi$trip_total <- as.numeric(ChicagoTaxi$trip_total)
+
+ChicagoTaxi$week <- 1
+
+
+#select vars
+vars <- c("year", "week", "month", "trip_miles", "trip_total")
+
+#subset
+chicagoTaxicon <-  ChicagoTaxi[vars]
+# rename variables
+chicagoTaxicon <- 
+  chicagoTaxicon %>%
+  rename(
+    traffic_taxi_trip_miles = trip_miles, 
+    traffic_taxi_trip_totals = trip_total
+  )
+
+chicagoTaxicon <- 
+  chicagoTaxicon %>%
+  group_by(year, month, week) %>%
+  summarise(traffic_taxi_trip_miles = mean(traffic_taxi_trip_miles), 
+            traffic_taxi_trip_totals = mean(traffic_taxi_trip_totals))
+```
+
+## Rideshare
+```{r}
+result <- fromJSON("./Chicago/Data/ridesharechi.json")
+chicagoRideshare <- as.data.frame(result)
+
+
+#select vars
+vars <- c("trip_start_timestamp", "trip_miles", "dropoff_centroid_longitude", 
+          "dropoff_centroid_latitude")
+
+
+# split date into month / year 
+chicagoRideshare <-
+  chicagoRideshare %>%
+  dplyr::mutate(year = lubridate::year(trip_start_timestamp), 
+                month = lubridate::month(trip_start_timestamp), 
+                day = lubridate::day(trip_start_timestamp))
+chicagoRideshare$week <- 1
+
+#select vars
+vars <- c("month", "week", "trip_miles", "year")
+
+#subset
+chicagoRidesharecon <- chicagoRideshare[vars]
+chicagoRidesharecon$trip_miles <- as.numeric(chicagoRidesharecon$trip_miles)
+chicagoRidesharecon$rides_total <- chicagoRidesharecon$trip_miles - sum(chicagoRidesharecon$trip_miles)
+
+
+# rename variables
+chicagoRidesharecon <- 
+  chicagoRidesharecon %>%
+  rename(
+    traffic_rideshare_miles = trip_miles)
+
+
+
+chicagoRidesharecon <- subset(chicagoRidesharecon, year >=2018)
+
+chicagoRidesharecon <- 
+  chicagoRidesharecon %>%
+  group_by(week,month,year) %>%
+  summarise(traffic_rideshare_miles = mean(traffic_rideshare_miles))
+
+```
+
+## Bus Routes Daily Totals (no lat  / long), 2018 - 2020
+```{r}
+result <- read.csv("./Chicago/Data/Chicago_bus.csv")
+chicagoBus <- as.data.frame(result)
+
+# reformat date before split
+chicagoBus$Month_Beginning <- strptime(as.character(chicagoBus$Month_Beginning), "%m/%d/%Y")
+format(chicagoBus$Month_Beginning, "%Y-%m-%d")
+
+# split date into month / year 
+chicagoBus <-
+  chicagoBus %>%
+  dplyr::mutate(year = lubridate::year(Month_Beginning), 
+                month = lubridate::month(Month_Beginning), 
+                day = lubridate::day(Month_Beginning))
+
+chicagoBus$week <- lubridate::week(ymd(chicagoBus$Month_Beginning))
+
+#select vars
+vars <- c("month","week", "Avg_Weekday_Rides", "year", "Avg_Saturday_Rides", "Avg_Sunday.Holiday_Rides", "MonthTotal")
+
+#subset
+chicagoBuscon <- chicagoBus[vars]
+chicagoBuscon$avg_weekday_rides <- as.numeric(chicagoBuscon$Avg_Weekday_Rides)
+chicagoBuscon$avg_saturday_rides <- as.numeric(chicagoBuscon$Avg_Saturday_Rides)
+chicagoBuscon$avg_sunday_holiday_rides <- as.numeric(chicagoBuscon$Avg_Sunday.Holiday_Rides)
+
+
+
+chicagoBuscon <- subset(chicagoBuscon, year >=2018)
+vars <- c("month", "week", "year", "avg_weekday_rides", "avg_saturday_rides", "avg_sunday_holiday_rides")
+chicagoBuscon <- chicagoBuscon[vars]
+
+chicagoBuscon <- 
+  chicagoBuscon %>%
+  group_by(week, month, year) %>%
+  summarise(avg_weekday_rides = mean(avg_weekday_rides), 
+            avg_saturday_rides = mean(avg_saturday_rides), 
+            avg_sunday_holiday_rides = mean(avg_sunday_holiday_rides))
+```
+
+## Road Network
+```{r}
+library(rgdal)
+Chicago_spdf <- readOGR( 
+  dsn= paste0(getwd(),"./Chicago/Data/cityboundary/cityboundary.shp"))
+
+par(mar=c(0,0,0,0))
+plot(Chicago_spdf, col="#f2f2f2", bg="black", lwd=0.25, border = 0)
+```
+
+
+## Combine datasets to create master
+```{r}
+# combine row feature datasets
+chi_v1 <- merge(ChicagoAQIcon, ChicagoWeathercon, by = c("week", "month", "year"), all.y= T)
+chi_v12 <- merge(chi_v1, chicagoBuscon, by = c("week", "month", "year"), all.x= T)
+chi_v2 <- merge(chi_v12, ChicagoPollutioncon, by = c("week", "month", "year"), all.x = T)
+chi_v3 <- merge(chi_v2, chicagoTaxicon, by = c("week", "month", "year"), all.x = T)
+chi_v4 <- merge(chi_v3, chicagoRidesharecon, by = c("week", "month", "year"), all.x = T)
+
+Chicago_feature <- merge(chi_v4, chicagotrafficcon, by = c("week", "month", "year"), all.x = T)
+write.csv(Chicago_feature, file = "./Chicago/Data/ChicagoFeatures_V2.csv")
+```
