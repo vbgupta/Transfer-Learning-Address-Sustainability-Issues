@@ -1,4 +1,6 @@
+# Import Libraries
 import statistics
+
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -6,16 +8,11 @@ import streamlit as st
 
 # PREDICTION FUNCTION
 def predict_AQI(city, week, year, multi_week, month):
-    
-    # if user chooses chicago
     if city == 'Chicago':
         data = pd.read_csv("pages/data/chi_actual_pred.csv")
-        
-        # if user wants multiple week outputted
         if multi_week:
             result = []
             actual = []
-            # get predicted and actual values of weeks for given year
             for i in week.values():
                 result_val = pd.DataFrame(data[(data["week"] == (i)) & (data["year"] == int(year))])
                 result_val = result_val.iloc[:, 1].values
@@ -25,7 +22,6 @@ def predict_AQI(city, week, year, multi_week, month):
                 actual.append(np.array_repr(actual_val))
                 f_r = []
                 f_a = []
-                # reformat array output
                 for i in result:
                     i = i.replace('array([', '')
                     f_r.append(i.replace('])', ''))
@@ -33,28 +29,23 @@ def predict_AQI(city, week, year, multi_week, month):
                     i = i.replace('array([', '')
                     f_a.append(i.replace('])', ''))
             return f_r, f_a
-        
-        # if user wants monthly average
+
         elif month != '0':
             result = pd.DataFrame(data[(data["month"] == int(month)) & (data["year"] == int(year))])
             result = statistics.mean(result.iloc[:, 1].values)
             actual = pd.DataFrame(data[(data["month"] == int(month)) & (data["year"] == int(year))])
             actual = statistics.mean(actual.iloc[:, 6].values)
             return result, actual
-        
-        # if user only wants a predicted and actual aqi for inputted week / year
+
         else:
             result = pd.DataFrame(data[(data["week"] == int(week)) & (data["year"] == int(year))])
             result = result.iloc[:, 1].values
             actual = pd.DataFrame(data[(data["week"] == int(week)) & (data["year"] == int(year))])
             actual = actual.iloc[:, 6].values
             return result, actual
-        
-    # if the user chooses philly
+
     if city == 'Philadelphia':
         data = pd.read_csv("pages/data/phl_actual_pred.csv")
-        
-        # if user wants multiple week outputted
         if multi_week:
             result = []
             actual = []
@@ -67,8 +58,6 @@ def predict_AQI(city, week, year, multi_week, month):
                 actual.append(np.array_repr(actual_val))
                 f_r = []
                 f_a = []
-                
-                # reformat array output
                 for i in result:
                     i = i.replace('array([', '')
                     f_r.append(i.replace('])', ''))
@@ -76,16 +65,14 @@ def predict_AQI(city, week, year, multi_week, month):
                     i = i.replace('array([', '')
                     f_a.append(i.replace('])', ''))
             return f_r, f_a
-        
-        # if the user wants monthly avg aqi
+
         elif month != '0':
             result = pd.DataFrame(data[(data["month"] == int(month)) & (data["year"] == int(year))])
             result = statistics.mean(result.iloc[:, 1].values)
             actual = pd.DataFrame(data[(data["month"] == int(month)) & (data["year"] == int(year))])
             actual = statistics.mean(actual.iloc[:, 7].values)
             return result, actual
-        
-        # if user only wants to choose week and year
+
         else:
             result = pd.DataFrame(data[(data["week"] == int(week)) & (data["year"] == int(year))])
             result = result.iloc[:, 1].values
@@ -183,19 +170,53 @@ def app():
         # figure of AQI measurements / description
         st.image("./pages/images/PM2017.png")
 
-        # input visual graph created by model and RMSE
+        # input visual graph based on year created by model and RMSE
         st.header('Plot of True Values to Predicted Values')
         if city == 'Chicago':
-            st.image('pages/images/chi_plot.png')
-            st.metric('Normalized RMSE', 0.24682464)
-            st.write("Normalized RMSE is measuring the standard deviation of the residuals (prediction errors)."
-                     " In general, a RMSE between 0.2 - 0.5 indicates the model relatively predicts accurately.")
+            if year == '2018':
+                st.image('pages/images/2018CHI.png')
+                st.metric('Normalized RMSE', 0.24682464)
+                st.write("Normalized RMSE is measuring the standard deviation of the residuals (prediction errors)."
+                         " In general, a RMSE between 0.2 - 0.5 indicates the model relatively predicts accurately.")
+            if year == '2019':
+                st.image('pages/images/2019CHI.png')
+                st.metric('Normalized RMSE', 0.24682464)
+                st.write("Normalized RMSE is measuring the standard deviation of the residuals (prediction errors)."
+                         " In general, a RMSE between 0.2 - 0.5 indicates the model relatively predicts accurately.")
+            if year == '2020':
+                st.image('pages/images/2020CHI.png')
+                st.metric('Normalized RMSE', 0.24682464)
+                st.write("Normalized RMSE is measuring the standard deviation of the residuals (prediction errors)."
+                         " In general, a RMSE between 0.2 - 0.5 indicates the model relatively predicts accurately.")
+            if year == '2021':
+                st.image('pages/images/2021CHI.png')
+                st.metric('Normalized RMSE', 0.24682464)
+                st.write("Normalized RMSE is measuring the standard deviation of the residuals (prediction errors)."
+                         " In general, a RMSE between 0.2 - 0.5 indicates the model relatively predicts accurately.")
 
         else:
-            st.image('pages/images/philly_plot.png')
-            st.metric('Normalized RMSE', 0.20027714)
-            st.write("Normalized RMSE is measuring the standard deviation of the residuals (prediction errors)."
-                     " In general, a RMSE between 0.2 - 0.5 indicates the model relatively predicts accurately.")
+            if year == '2018':
+                st.image('pages/images/2018PHL.png')
+                st.metric('Normalized RMSE', 0.20027714)
+                st.write("Normalized RMSE is measuring the standard deviation of the residuals (prediction errors)."
+                         " In general, a RMSE between 0.2 - 0.5 indicates the model relatively predicts accurately.")
+
+            if year == '2019':
+                st.image('pages/images/2019PHL.png')
+                st.metric('Normalized RMSE', 0.20027714)
+                st.write("Normalized RMSE is measuring the standard deviation of the residuals (prediction errors)."
+                         " In general, a RMSE between 0.2 - 0.5 indicates the model relatively predicts accurately.")
+            if year == '2020':
+                st.image('pages/images/2020PHL.png')
+                st.metric('Normalized RMSE', 0.20027714)
+                st.write("Normalized RMSE is measuring the standard deviation of the residuals (prediction errors)."
+                         " In general, a RMSE between 0.2 - 0.5 indicates the model relatively predicts accurately.")
+
+            if year == '2021':
+                st.image('pages/images/2021PHL.png')
+                st.metric('Normalized RMSE', 0.20027714)
+                st.write("Normalized RMSE is measuring the standard deviation of the residuals (prediction errors)."
+                         " In general, a RMSE between 0.2 - 0.5 indicates the model relatively predicts accurately.")
 
         # feature row used in modeling
         st.header("Features used in predicting the AQI value")
