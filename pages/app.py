@@ -1,5 +1,5 @@
-#**THE FOLLOWING CODE HAS BEEN MODIFIED AND FOUND ON https://towardsdatascience.com/creating-multipage-applications-using-streamlit-efficiently-b58a58134030**
-#***To run the following code and deploy streamlit application type "streamlit run ./pages/app.py" in terminal***
+**THE FOLLOWING CODE HAS BEEN MODIFIED AND FOUND ON https://towardsdatascience.com/creating-multipage-applications-using-streamlit-efficiently-b58a58134030**
+***To run the following code and deploy streamlit application type "streamlit run ./pages/app.py" in terminal***
 
 import streamlit as st
 
