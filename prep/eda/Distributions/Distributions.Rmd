@@ -1,0 +1,50 @@
+---
+title: "Distribution Plots"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+Notes:
+ - esquisse
+
+```{r}
+ggplot(NYCAQIcon, aes(x = AQI_weekly_avg), xlim(0, 20)) +
+  geom_density() 
+```
+
+```{r}
+ggplot(PhillyAQIcon, aes(x = AQI_weekly_avg), xlim(0,20)) +
+  geom_density()
+```
+
+```{r}
+ggplot(ChicagoAQIcon, aes(x = AQI_Weekly_Measurement)) +
+  geom_density()
+```
+```{r}
+ggplot(NYCPollutioncon, aes(x = feature_val), xlim(75)) +
+  geom_bar()
+```
+```{r}
+ggplot(phillyPollutioncon, aes(x = feature_val), xlim(75)) +
+  geom_bar()
+```
+```{r}
+ggplot(chicagoPollutioncon, aes(x = feature_val), xlim(75)) +
+  geom_bar()
+```
+
+
+```{r}
+ggplot(PhillyWeathercon, aes(x = feature_val)) +
+  geom_bar()
+```
+
+```{r}
+ggplot(ChicagoWeathercon, aes(x = feature_val)) +
+  geom_bar()
+```
+```{r}
+ggplot(NYCWeathercon, aes(x = feature_year, y = feature_val))+
+  geom_point()
+```
