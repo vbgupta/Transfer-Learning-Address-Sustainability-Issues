@@ -1,0 +1,28 @@
+---
+title: "PhillyWQI"
+author: "Ally Racho"
+date: "2/10/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r}
+library(readr)
+PhillyWQI <- read_csv("Data/PhillyWQI.csv")
+View(PhillyWQI)
+```
+
+```{r}
+library(DataExplorer)
+```
+
+```{r}
+#condense data
+vars <- c("ActivityStartDate", "ActivityStartTime/Time", "CharacteristicName", "ResultSampleFractionText", "ResultMeasureValue", "ResultMeasure/MeasureUnitCode")
+PhillyWQI <- PhillyWQI[vars]
+```
+
+```{r}
+create_report(PhillyWQI)
+```
+

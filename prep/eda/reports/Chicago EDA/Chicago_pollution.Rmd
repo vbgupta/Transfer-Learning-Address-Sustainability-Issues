@@ -1,0 +1,62 @@
+---
+title: "Chicago Pollution"
+author: "Ally Racho"
+date: "2/8/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+#load EDA library 
+```{r}
+library(DataExplorer)
+library(tidyverse)
+library(readr)
+chi_com_illinois_air_quality <- read_csv("Data/chi_com,-illinois-air-quality.csv")
+```
+
+#summarize data statistically 
+```{r}
+summary(chi_com_illinois_air_quality)
+```
+
+```{r}
+plot_str(chi_com_illinois_air_quality)
+```
+
+```{r}
+plot_intro(chi_com_illinois_air_quality)
+```
+
+#Histogram of pollutants
+```{r}
+plot_histogram(chi_com_illinois_air_quality)
+```
+
+```{r}
+qq_plot <- plot_qq(chi_com_illinois_air_quality)
+```
+# o3 appears skewed on both ends
+```{r}
+#log_qq_data <- update_columns(qq_plot, 'o3', function(x) log(x + 1))
+#plot_qq(log_qq_data[3], sampled_rows = 1000L)
+```
+
+#correlation matrix excluding NAs
+```{r}
+plot_correlation(na.omit(chi_com_illinois_air_quality), maxcat = 5L)
+```
+
+```{r}
+pca_df <- na.omit(chi_com_illinois_air_quality[, c("pm25", "o3")])
+plot_prcomp(pca_df, variance_cap = 0.9, nrow = 2L, ncol = 2L)
+```
+
+```{r}
+plot_boxplot(chi_com_illinois_air_quality, by = 'date')
+```
+
+```{r}
+plot_scatterplot(chi_com_illinois_air_quality, by = 'date')
+```
+

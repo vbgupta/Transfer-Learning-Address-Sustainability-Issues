@@ -1,0 +1,65 @@
+---
+title: "Chicago AQi EDA"
+author: "Ally Racho"
+date: "2/10/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r}
+library(jsonlite)
+#chicago 2018 aqi
+result <- fromJSON("./Data/ChicagoAQI2018.json")
+chicagoAQI2018 <- as.data.frame(result)
+
+#chicago 2019 aqi
+result <- fromJSON("./Data/ChicagoAQI2019.json")
+chicagoAQI2019 <- as.data.frame(result)
+
+#chicago 2020 aqi
+result <- fromJSON("./Data/ChicagoAQI2020.json")
+chicagoAQI2020 <- as.data.frame(result)
+
+#chicago 2021 aqi
+result <- fromJSON("./Data/ChicagoAQI2021.json")
+chicagoAQI2021 <- as.data.frame(result)
+
+#combine all years to one dataset
+df_list <- list(chicagoAQI2018, chicagoAQI2019, chicagoAQI2020, chicagoAQI2021)
+ChicagoAQI <- Reduce(function(x,y)merge(x,y,all = TRUE), df_list, accumulate = FALSE)
+
+write.csv(ChicagoAQI, file = "./Data/ChicagoAQI.csv")
+
+```
+
+
+```{r}
+library(DataExplorer)
+```
+
+```{r}
+introduce(ChicagoAQI)
+```
+
+```{r}
+plot_intro(ChicagoAQI)
+```
+```{r}
+plot_missing(ChicagoAQI)
+```
+
+```{r}
+plot_histogram(ChicagoAQI$Data.sample_measurement, title = 'Chicago AQI Sample Measurements')
+
+```
+
+```{r}
+plot_qq(ChicagoAQI$Data.sample_measurement)
+```
+
+```{r}
+sample_meas <- ChicagoAQI[, c("Data.sample_measurement", "Data.date_local")]
+
+plot_scatterplot(sample_meas, by = "Data.date_local", sampled_rows = 1000L)
+```
+
