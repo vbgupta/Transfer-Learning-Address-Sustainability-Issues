@@ -1,9 +1,9 @@
 # DS440-Transfer-Learning-Address-Sustainability-Issues
 
-UPDATE: *Latest Version **New York Version 2** is now available in Azure SQL as `newyork_v2`.*
-*Latest Version **Philadelphia Version 2** is now available in Azure SQL as `PhillyFeatures_V2`.*
-*Latest Version **Chicago Version 2** is now available in Azure SQL as `ChicagoFeatures_V2`.*
-*Latest Version **Hazleton Version 1** is now available in Azure SQL as `HazletonFeatures`.*
+UPDATE: *Latest Version **New York Version 2** is now available in Azure SQL as `newyork_v2`.* \n
+*Latest Version **Philadelphia Version 2** is now available in Azure SQL as `PhillyFeatures_V2`.* \n
+*Latest Version **Chicago Version 2** is now available in Azure SQL as `ChicagoFeatures_V2`.* \n
+*Latest Version **Hazleton Version 1** is now available in Azure SQL as `HazletonFeatures`.* \n
 *Streamlit app source code and video of application running available in 'pages' folder*
 
 ### Datasets
