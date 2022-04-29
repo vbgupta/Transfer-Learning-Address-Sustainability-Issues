@@ -24,7 +24,7 @@ phillyAQI2021 <- as.data.frame(result)
 #combine all years to one dataset
 df_list <- list(phillyAQI2018, phillyAQI2019, phillyAQI2020, phillyAQI2021)
 PhillyAQI <- Reduce(function(x,y)merge(x,y,all = TRUE), df_list, accumulate = FALSE)
-
+write.csv(PhillyAQI, "./Philly/Data/PhillyAQI.csv")
 
 
 #########################
@@ -49,3 +49,5 @@ chicagoAQI2021 <- as.data.frame(result)
 #combine all years to one dataset
 df_list <- list(chicagoAQI2018, chicagoAQI2019, chicagoAQI2020, chicagoAQI2021)
 ChicagoAQI <- Reduce(function(x,y)merge(x,y,all = TRUE), df_list, accumulate = FALSE)
+write.csv(ChicagoAQI, "./Chicago/Data/ChicagoAQI.csv")
+
