@@ -4,6 +4,7 @@ UPDATE: *Latest Version **New York Version 2** is now available in Azure SQL as 
 *Latest Version **Philadelphia Version 2** is now available in Azure SQL as `PhillyFeatures_V2`.*
 *Latest Version **Chicago Version 2** is now available in Azure SQL as `ChicagoFeatures_V2`.*
 *Latest Version **Hazleton Version 1** is now available in Azure SQL as `HazletonFeatures`.*
+*Streamlit app source code and video of application running available in 'pages' folder*
 
 ### Datasets
 
