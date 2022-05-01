@@ -7,8 +7,6 @@ output: html_notebook
 ## Notes:
 - AQI is 3 day span for county of Philadelphia, Philadelphia. -- take avg over 6 days
 - road network not included in feature set 
-- still dealing with lots of NAs 
-
 
 
 # clear environment
@@ -74,7 +72,7 @@ write.csv(PhillyAQIcon, "./Data/Philly_AQI.csv")
 ```
 
 
-## WQI 
+## WQI -- not used in end
 # need to choose which features needed
 ```{r}
 # load data
@@ -306,7 +304,7 @@ PhillyPedcon <-
   summarise(traffic_ped_counts = mean(traffic_ped_counts))
 ```
 
-## Road Network
+## Road Network -- not included in feature dataset
 ```{r}
 #library(rgdal)
 #Philly_spdf <- readOGR( 
